@@ -1,0 +1,24 @@
+{
+  "name": "Duenenvilla Buchungssystem",
+  "short_name": "DV Buchung",
+  "description": "Buchungsverwaltung Duenenvilla & Strandvilla Thiessow",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#e8f0e4",
+  "theme_color": "#1a5276",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
