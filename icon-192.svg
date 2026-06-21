@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="32" fill="#1a5276"/>
+  <text x="96" y="80" text-anchor="middle" fill="#fff" font-size="48" font-family="sans-serif" font-weight="bold">DV</text>
+  <text x="96" y="120" text-anchor="middle" fill="#82e0aa" font-size="22" font-family="sans-serif" font-weight="600">Buchung</text>
+  <rect x="30" y="140" width="132" height="4" rx="2" fill="#82e0aa" opacity="0.5"/>
+</svg>
