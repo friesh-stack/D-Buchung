@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anfragen-Assistent</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;500;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#1a5276;--bd:#0e3651;--ac:#2e86c1;--fr:#d4edda;--ft:#155724;--bk:#f8d7da;--bt:#721c24;--anf:#fff3cd;--paper:#fbfaf7;--ink:#1c2b33;--line:#d8dfe3;}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);}
+header{background:linear-gradient(135deg,var(--blue),var(--bd));color:#fff;padding:22px 18px;}
+header h1{font-family:'Playfair Display',serif;margin:0 0 4px;font-size:1.5rem;}
+header p{margin:0;font-size:.85rem;opacity:.85;}
+.wrap{max-width:760px;margin:0 auto;padding:14px;}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+.cardh{background:#f1f5f7;padding:10px 14px;font-weight:700;font-size:.95rem;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+.cardb{padding:14px;}
+.tabs{display:flex;gap:8px;margin-bottom:14px;}
+.tab{flex:1;padding:10px;text-align:center;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:.85rem;font-weight:700;color:var(--blue);}
+.tab.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+textarea,input,select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;font-family:inherit;font-size:.9rem;margin-bottom:8px;}
+textarea{min-height:110px;resize:vertical;}
+label{font-size:.78rem;color:#5a6b73;display:block;margin-bottom:3px;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;}
+.fg .full{grid-column:1/-1;}
+.btn{background:var(--blue);color:#fff;border:none;padding:10px 16px;border-radius:7px;font-weight:700;cursor:pointer;font-size:.88rem;}
+.btn:disabled{opacity:.5;cursor:default;}
+.btn.sec{background:#fff;color:var(--blue);border:1px solid var(--blue);}
+.btn.wa{background:#25d366;}
+.btn.row{margin-right:8px;margin-top:6px;}
+.note{font-size:.78rem;color:#7a8a92;margin-top:6px;}
+.warn{background:var(--anf);color:#7a5b00;padding:8px 10px;border-radius:7px;font-size:.82rem;margin:8px 0;}
+.mailcard{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:8px;background:#fbfdfe;}
+.mailcard b{font-size:.9rem;}
+.mailcard .meta{font-size:.75rem;color:#7a8a92;margin:2px 0 6px;}
+.pre{white-space:pre-wrap;font-family:'DM Mono',monospace,monospace;font-size:.82rem;background:#f7f6f2;border:1px solid var(--line);border-radius:8px;padding:12px;line-height:1.45;}
+.priceBox{background:#eef6fa;border-radius:8px;padding:10px;font-size:.85rem;margin:8px 0;}
+.priceBox div{display:flex;justify-content:space-between;padding:1px 0;}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;margin-right:6px;vertical-align:-2px;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.hist{font-size:.82rem;border-bottom:1px solid var(--line);padding:6px 0;display:flex;justify-content:space-between;align-items:center;}
+.hist a{color:var(--ac);cursor:pointer;text-decoration:underline;}
+.hidden{display:none;}
+</style>
+</head>
+<body>
+<header><h1>Anfragen-Assistent</h1><p>E-Mail / WhatsApp / Telefon &rarr; automatisches Angebot &mdash; Duenenvilla &amp; Strandvilla</p></header>
+<div class="wrap">
+
+<div class="tabs">
+  <div class="tab active" id="tabBtn_mail" onclick="switchTab('mail')">E-Mail (Gmail)</div>
+  <div class="tab" id="tabBtn_text" onclick="switchTab('text')">WhatsApp / Telefon</div>
+</div>
+
+<div class="card" id="tab_mail">
+  <div class="cardh">Postfach nach Anfragen durchsuchen</div>
+  <div class="cardb">
+    <p class="note" style="margin-top:0">Sucht nach aktuellen Anfragen von hundeurlaub.de und ostsee-reisen.de im Gmail-Postfach und liest sie automatisch aus.</p>
+    <button class="btn" id="btnSearchMail" onclick="searchMail()">Postfach durchsuchen</button>
+    <div id="mailResults" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<div class="card hidden" id="tab_text">
+  <div class="cardh">WhatsApp-Text oder Telefon-Notiz einfügen</div>
+  <div class="cardb">
+    <label>Quelle</label>
+    <select id="txtSource">
+      <option value="whatsapp">WhatsApp</option>
+      <option value="telefon">Telefon (manuell eingetippt)</option>
+      <option value="andere">Andere</option>
+    </select>
+    <label>Text der Anfrage (einfach reinkopieren oder kurz mitschreiben)</label>
+    <textarea id="txtInput" placeholder="z.B. 'Hallo, wir würden gerne vom 12.7. bis 19.7. zu viert mit einem Hund in die Dünenvilla 3, Grüße Familie Schmidt, 0151...'"></textarea>
+    <button class="btn" onclick="analyzeText()">Anfrage analysieren</button>
+    <button class="btn sec" onclick="openManualForm()">Direkt leeres Formular</button>
+  </div>
+</div>
+
+<div class="card hidden" id="formCard">
+  <div class="cardh">Anfrage-Daten <span style="font-size:.75rem;color:#7a8a92;font-weight:400">(vor dem Erstellen pruefen/korrigieren)</span></div>
+  <div class="cardb">
+    <div class="fg">
+      <div><label>Gast (Nachname reicht)</label><input id="f_gast"></div>
+      <div><label>Wohnung</label><select id="f_uid"></select></div>
+      <div><label>Anreise</label><input type="date" id="f_von" onchange="updatePrice()"></div>
+      <div><label>Abreise</label><input type="date" id="f_bis" onchange="updatePrice()"></div>
+      <div><label>Personen</label><input type="number" id="f_pers" value="2" min="1" onchange="updatePrice()"></div>
+      <div><label>Hunde</label><input type="number" id="f_hunde" value="0" min="0" onchange="updatePrice()"></div>
+      <div><label>Telefon</label><input id="f_phone"></div>
+      <div><label>E-Mail</label><input id="f_email"></div>
+      <div class="full"><label>Quelle</label>
+        <select id="f_quelle"><option value="hundeurlaub">hundeurlaub.de</option><option value="ostsee-reisen">ostsee-reisen.de</option><option value="whatsapp">WhatsApp</option><option value="telefon">Telefon</option><option value="andere">Andere</option></select>
+      </div>
+    </div>
+    <div id="priceBox"></div>
+    <div id="ruleWarn"></div>
+    <button class="btn" onclick="buildOffer()">Angebot-Text erstellen</button>
+  </div>
+</div>
+
+<div class="card hidden" id="offerCard">
+  <div class="cardh">Angebot</div>
+  <div class="cardb">
+    <div class="pre" id="offerText"></div>
+    <button class="btn row" onclick="copyOffer()">Kopieren</button>
+    <button class="btn wa row" id="btnWA">WhatsApp öffnen</button>
+    <button class="btn sec row" id="btnMail">E-Mail öffnen</button>
+    <button class="btn sec row" id="btnGmailDraft" onclick="createGmailDraft()">Als Gmail-Entwurf anlegen</button>
+    <p class="note">Dies erstellt nur den Angebotstext. Die Buchung selbst trägst du nach Bestätigung weiterhin bewusst in D-Buchung ein.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="cardh" style="cursor:pointer" onclick="toggleHist()">Verlauf <span id="histArrow">&#9656;</span></div>
+  <div class="cardb hidden" id="histBody"></div>
+</div>
+
+</div>
+
+<script>
+// ===== Preis-Engine: identisch zu D-Buchung (friesh-stack.github.io/D-Buchung) =====
+var UNITS=[
+  {id:"dv3",name:"Duenenvilla 3",short:"DV3",pers:5,clean:85,dog:5,laundry:25,off:95,neb:110,hau:130},
+  {id:"dv5",name:"Duenenvilla 5",short:"DV5",pers:4,clean:85,dog:5,laundry:25,off:85,neb:95,hau:110},
+  {id:"sv8a",name:"Strandvilla 8a",short:"SV8a",pers:6,clean:180,dog:5,laundry:25,off:165,neb:195,hau:220},
+  {id:"sv8b",name:"Strandvilla 8b",short:"SV8b",pers:6,clean:180,dog:5,laundry:25,off:165,neb:195,hau:220}
+];
+var RULES={minHau:7,minNeb:5,minOff:3};
+var FT={"2026-01-01":1,"2026-04-03":1,"2026-04-06":1,"2026-05-01":1,"2026-05-14":1,"2026-05-25":1,"2026-10-03":1,"2026-10-31":1,"2026-12-25":1,"2026-12-26":1,"2026-12-31":1,"2027-01-01":1,"2027-03-26":1,"2027-03-29":1,"2027-05-01":1,"2027-05-06":1,"2027-05-17":1,"2027-10-03":1,"2027-10-31":1,"2027-12-25":1,"2027-12-26":1};
+var ftDates=[];for(var k in FT){ftDates.push(new Date(k+"T00:00:00").getTime());}
+function isNearFT(d){var t=d.getTime(),day=864e5;for(var i=0;i<ftDates.length;i++){var diff=t-ftDates[i];if(diff>=-3*day&&diff<=1*day)return true;}return false;}
+function getSeason(d){var m=d.getMonth()+1,dy=d.getDate(),y=d.getFullYear();if(y===2027&&m===1&&dy<=5)return"hau";if(m===12&&dy>=23)return"hau";if((m===6&&dy>=16)||m===7||m===8||(m===9&&dy<=14))return"hau";if(isNearFT(d))return"hau";if(m===5||(m===6&&dy<=15))return"neb";if((m===9&&dy>=15)||m===10)return"neb";return"off";}
+function pd(s){return new Date(s+"T00:00:00");}
+function fmt(s){return s.split("-").reverse().join(".");}
+function dk(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function getPrice(u,date){var s=getSeason(date);return u[s];}
+function calcAccom(u,von,bis){var dV=pd(von),dB=pd(bis),sum=0,d=new Date(dV);while(d<dB){sum+=getPrice(u,d);d.setDate(d.getDate()+1);}return sum;}
+function de(n){var s=Number(n).toFixed(2);var p=s.split(".");return p[0].replace(/\B(?=(\d{3})+(?!\d))/g,".")+","+p[1];}
+function rj(s,w){s=String(s);while(s.length<w)s=" "+s;return s;}
+function genInvNr(uid,von){return uid.toUpperCase().replace("DV3","DV3").replace("dv","DV").replace("sv","SV")+"-"+von.replace(/-/g,"");}
+
+var TODAY=new Date();TODAY.setHours(0,0,0,0);
+var MAIL="fries"+"h@gm"+"x.de";
+var BANK="Annelie-Clara Fries\nSparda-Bank\nBIC: GENODEF1S10\nIBAN: DE44 1209 6597 0007 5732 19";
+
+(function fillUnitSelect(){
+  var sel=document.getElementById("f_uid");
+  UNITS.forEach(function(u){var o=document.createElement("option");o.value=u.id;o.textContent=u.name;sel.appendChild(o);});
+  sel.onchange=updatePrice;
+})();
+
+function switchTab(t){
+  ["mail","text"].forEach(function(x){
+    document.getElementById("tab_"+x).classList.toggle("hidden",x!==t);
+    document.getElementById("tabBtn_"+x).classList.toggle("active",x===t);
+  });
+}
+
+// ===== Claude-API Aufruf (Text only) =====
+async function callClaude(prompt){
+  var res=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:prompt}]})
+  });
+  var data=await res.json();
+  return (data.content||[]).filter(function(c){return c.type==="text";}).map(function(c){return c.text;}).join("\n");
+}
+// ===== Claude-API Aufruf mit Gmail MCP =====
+async function callClaudeGmail(prompt){
+  var res=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      model:"claude-sonnet-4-6",max_tokens:1000,
+      messages:[{role:"user",content:prompt}],
+      mcp_servers:[{type:"url",url:"https://gmailmcp.googleapis.com/mcp/v1",name:"gmail"}]
+    })
+  });
+  var data=await res.json();
+  return data.content||[];
+}
+function extractJSON(text){
+  var clean=text.replace(/```json|```/g,"").trim();
+  var s=clean.indexOf("[")>=0&&(clean.indexOf("{")<0||clean.indexOf("[")<clean.indexOf("{"))?clean.indexOf("["):clean.indexOf("{");
+  var e=Math.max(clean.lastIndexOf("]"),clean.lastIndexOf("}"));
+  if(s>=0&&e>=0)clean=clean.substring(s,e+1);
+  try{return JSON.parse(clean);}catch(err){return null;}
+}
+
+// ===== E-Mail Tab =====
+async function searchMail(){
+  var btn=document.getElementById("btnSearchMail");
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Suche laeuft...';
+  var box=document.getElementById("mailResults");box.innerHTML="";
+  try{
+    var prompt="Durchsuche das Gmail-Postfach nach E-Mails der letzten 21 Tage von Absendern, die 'hundeurlaub.de' oder 'ostsee-reisen.de' enthalten, oder die inhaltlich klar eine Unterkunfts-Buchungsanfrage fuer eine Ferienwohnung sind. Lies fuer jede passende E-Mail den vollen Inhalt und extrahiere die Anfrage-Daten. "+
+      "Antworte AUSSCHLIESSLICH mit einem JSON-Array, ohne Praeambel, ohne Markdown-Codeblock. Jedes Element: "+
+      '{"messageId":"...","subject":"...","from":"...","date":"YYYY-MM-DD","gast":"Nachname","email":"...","phone":"...","von":"YYYY-MM-DD","bis":"YYYY-MM-DD","pers":2,"hunde":0,"wohnungHint":"dv3|dv5|sv8a|sv8b|unbekannt","quelle":"hundeurlaub|ostsee-reisen|andere","snippet":"kurzer Auszug"}. '+
+      "Wenn ein Feld nicht sicher erkennbar ist, setze es auf null. Wenn keine passenden E-Mails gefunden werden, antworte mit []."
+    ;
+    var content=await callClaudeGmail(prompt);
+    var textBlocks=content.filter(function(c){return c.type==="text";}).map(function(c){return c.text;}).join("\n");
+    var arr=extractJSON(textBlocks);
+    if(!arr||!arr.length){box.innerHTML='<p class="note">Keine passenden Anfragen gefunden (letzte 21 Tage).</p>';}
+    else{
+      arr.forEach(function(m,i){
+        var d=document.createElement("div");d.className="mailcard";
+        d.innerHTML="<b>"+(m.gast||m.subject||"Anfrage")+"</b><div class='meta'>"+(m.from||"")+" &middot; "+(m.date||"")+" &middot; "+(m.quelle||"")+"</div>"+
+          "<div style='font-size:.82rem;color:#5a6b73'>"+(m.snippet||"")+"</div>";
+        var b=document.createElement("button");b.className="btn sec row";b.textContent="Übernehmen → Formular";
+        b.onclick=function(){fillFormFromExtract(m);};
+        d.appendChild(b);
+        box.appendChild(d);
+      });
+    }
+  }catch(e){box.innerHTML='<p class="warn">Fehler bei der Postfach-Suche: '+e.message+'</p>';}
+  btn.disabled=false;btn.textContent="Postfach durchsuchen";
+}
+
+// ===== WhatsApp/Telefon Tab =====
+async function analyzeText(){
+  var txt=document.getElementById("txtInput").value.trim();
+  var src=document.getElementById("txtSource").value;
+  if(!txt){alert("Bitte Text einfügen.");return;}
+  var box=document.getElementById("mailResults"); // reuse not needed
+  try{
+    var prompt="Extrahiere aus folgender Buchungsanfrage (Quelle: "+src+") die relevanten Daten fuer eine Ferienwohnung auf Ruegen (Duenenvilla/Strandvilla, Thiessow). Heutiges Datum: "+dk(TODAY)+". "+
+      "Antworte AUSSCHLIESSLICH mit einem JSON-Objekt ohne Praeambel/Markdown: "+
+      '{"gast":"Nachname","email":"...","phone":"...","von":"YYYY-MM-DD","bis":"YYYY-MM-DD","pers":2,"hunde":0,"wohnungHint":"dv3|dv5|sv8a|sv8b|unbekannt"}. '+
+      "Datumsangaben wie '12.7.-19.7.' bedeuten den aktuellen oder naechsten passenden Jahrgang relativ zum heutigen Datum. Nicht erkennbare Felder auf null setzen.\n\nText:\n"+txt;
+    var resTxt=await callClaude(prompt);
+    var obj=extractJSON(resTxt);
+    if(!obj){alert("Konnte den Text nicht automatisch auswerten. Bitte Formular manuell ausfüllen.");openManualForm();return;}
+    obj.quelle=src;
+    fillFormFromExtract(obj);
+  }catch(e){alert("Fehler: "+e.message);}
+}
+
+function openManualForm(){
+  fillFormFromExtract({});
+}
+
+function fillFormFromExtract(m){
+  document.getElementById("f_gast").value=m.gast||"";
+  document.getElementById("f_email").value=m.email||"";
+  document.getElementById("f_phone").value=m.phone||"";
+  document.getElementById("f_von").value=m.von||"";
+  document.getElementById("f_bis").value=m.bis||"";
+  document.getElementById("f_pers").value=m.pers||2;
+  document.getElementById("f_hunde").value=m.hunde||0;
+  var uidSel=document.getElementById("f_uid");
+  if(m.wohnungHint&&UNITS.some(function(u){return u.id===m.wohnungHint;}))uidSel.value=m.wohnungHint;
+  var qSel=document.getElementById("f_quelle");
+  if(m.quelle)qSel.value=m.quelle;
+  document.getElementById("formCard").classList.remove("hidden");
+  document.getElementById("offerCard").classList.add("hidden");
+  updatePrice();
+  document.getElementById("formCard").scrollIntoView({behavior:"smooth"});
+}
+
+function updatePrice(){
+  var von=document.getElementById("f_von").value,bis=document.getElementById("f_bis").value;
+  var box=document.getElementById("priceBox"),warn=document.getElementById("ruleWarn");
+  box.innerHTML="";warn.innerHTML="";
+  if(!von||!bis||von>=bis)return;
+  var uid=document.getElementById("f_uid").value;
+  var u=UNITS.find(function(x){return x.id===uid;});
+  var hunde=parseInt(document.getElementById("f_hunde").value)||0;
+  var nights=Math.round((pd(bis)-pd(von))/864e5);
+  var accom=calcAccom(u,von,bis);
+  var dogFee=hunde*u.dog*nights;
+  var total=accom+dogFee+u.clean;
+  var season=getSeason(pd(von));
+  var seasonLabel=season==="hau"?"Hauptsaison":season==="neb"?"Nebensaison":"Off-Saison";
+  box.innerHTML="<div><span>Saison</span><b>"+seasonLabel+"</b></div><div><span>Naechte</span><b>"+nights+"</b></div>"+
+    "<div><span>Unterkunft</span><b>"+de(accom)+" EUR</b></div>"+
+    (hunde?"<div><span>Hunde</span><b>"+de(dogFee)+" EUR</b></div>":"")+
+    "<div><span>Endreinigung</span><b>"+de(u.clean)+" EUR</b></div>"+
+    "<div style='border-top:1px solid #c8dbe3;margin-top:4px;padding-top:4px'><span>Gesamt</span><b>"+de(total)+" EUR</b></div>";
+  var minN=season==="hau"?RULES.minHau:season==="neb"?RULES.minNeb:RULES.minOff;
+  if(nights<minN)warn.innerHTML='<div class="warn">Hinweis: Mindestaufenthalt in der '+seasonLabel+' sind eigentlich '+minN+' Naechte (Anfrage: '+nights+'). Im Angebot ggf. anpassen oder Rueckfrage stellen.</div>';
+}
+
+function buildOffer(){
+  var uid=document.getElementById("f_uid").value;
+  var u=UNITS.find(function(x){return x.id===uid;});
+  var von=document.getElementById("f_von").value,bis=document.getElementById("f_bis").value;
+  if(!von||!bis||von>=bis){alert("Bitte gueltige An- und Abreise eingeben.");return;}
+  var gast=document.getElementById("f_gast").value.trim()||"Gast";
+  var phone=document.getElementById("f_phone").value.trim();
+  var email=document.getElementById("f_email").value.trim();
+  var pers=parseInt(document.getElementById("f_pers").value)||2;
+  var hunde=parseInt(document.getElementById("f_hunde").value)||0;
+  var nights=Math.round((pd(bis)-pd(von))/864e5);
+  var accom=calcAccom(u,von,bis);
+  var dogFee=hunde*u.dog*nights;
+  var cleanFee=u.clean;
+  var total=accom+dogFee+cleanFee;
+  var anz=Math.round(total*0.5),rest=total-anz;
+  var inv=genInvNr(uid,von);
+  var today=fmt(dk(TODAY));
+  var anzFrist=new Date(TODAY);anzFrist.setDate(anzFrist.getDate()+7);
+  var anreise=pd(von);var restFrist=new Date(anreise);restFrist.setDate(restFrist.getDate()-7);
+
+  var t="";
+  t+=u.name+"\n";
+  t+="Im Duenenwald 4a\n18586 Ostseebad Moenchgut OT Thiessow\n";
+  t+="www.duenenvilla.de\nwww.ruegen-hundeurlaub.de\n\n";
+  t+="Angebot  Nr: "+inv+"    vom  "+today+"\n\n";
+  t+="> Traumhafte gelegene DUENENVILLA zw 3 Meeren mit Strandzugang!    "+u.name+"\n\n";
+  t+="Familie "+gast+"\n\n";
+  if(phone)t+="Telefon: "+phone+"\n";
+  if(email)t+="E-Mail: "+email+"\n";
+  t+="\n";
+  t+="Anreise:        "+fmt(von)+"   Ab 16 Uhr\n";
+  t+="Abreise:        "+fmt(bis)+"   bis 10 Uhr\n";
+  t+="Aufenthalt:     "+nights+" Naechte\n";
+  t+=pers+" Gaeste\n";
+  if(hunde)t+=hunde+" Hund(e)\n";
+  t+="\n\n";
+  t+="Unterkunft                     "+rj(nights,4)+"          "+rj(de(accom),12)+" EUR\n";
+  if(hunde)t+="Hunde              "+rj(de(u.dog),8)+"  "+rj(nights,4)+"          "+rj(de(dogFee),12)+" EUR\n";
+  t+="Waeschepaket       ohne\n";
+  t+="Parkplatz              "+rj(nights,4)+" Tage          frei\n\n";
+  t+="Endreinigung           "+rj(de(cleanFee),8)+"     1          "+rj(de(cleanFee),12)+" EUR\n\n";
+  t+="Reisepreis       "+u.name+"               "+rj(de(total),12)+" EUR\n\n\n";
+  t+="1.Zahlung        "+rj(de(anz),12)+" EUR\nzahlbar bis      "+fmt(dk(anzFrist))+"\n";
+  t+="auf das Konto:\n"+BANK+"\n\n";
+  t+="Restzahlung      "+rj(de(rest),12)+" EUR\nzahlbar bis      "+fmt(dk(restFrist))+"\naufs obige Konto\n\n";
+  t+="Es gelten unsere AGBs siehe www.duenenvilla.de/AGB\n";
+
+  document.getElementById("offerText").textContent=t;
+  document.getElementById("offerCard").classList.remove("hidden");
+  document.getElementById("offerCard").scrollIntoView({behavior:"smooth"});
+
+  var btnWA=document.getElementById("btnWA");
+  if(phone){var waPhone=phone.replace(/[^0-9+]/g,"").replace(/^\+/,"").replace(/^0/,"49");btnWA.style.display="";btnWA.onclick=function(){window.open("https://wa.me/"+waPhone+"?text="+encodeURIComponent(t),"_blank");};}
+  else btnWA.style.display="none";
+  var btnMail=document.getElementById("btnMail");
+  if(email){btnMail.style.display="";btnMail.onclick=function(){window.location.href="mailto:"+email+"?subject="+encodeURIComponent("Angebot "+inv+" - "+u.name)+"&body="+encodeURIComponent(t);};}
+  else btnMail.style.display="none";
+
+  window._lastOffer={text:t,gast:gast,uid:uid,von:von,bis:bis,inv:inv,email:email};
+  saveHistory(window._lastOffer);
+}
+
+function copyOffer(){navigator.clipboard.writeText(window._lastOffer.text).then(function(){alert("Angebot kopiert!");});}
+
+async function createGmailDraft(){
+  if(!window._lastOffer||!window._lastOffer.email){alert("Keine E-Mail-Adresse für diesen Gast hinterlegt.");return;}
+  var btn=document.getElementById("btnGmailDraft");btn.disabled=true;btn.textContent="Lege Entwurf an...";
+  try{
+    var prompt="Erstelle (nur als ENTWURF, nicht senden) eine Gmail-Antwort an "+window._lastOffer.email+" mit Betreff 'Angebot "+window._lastOffer.inv+"' und folgendem Text als Inhalt:\n\n"+window._lastOffer.text;
+    await callClaudeGmail(prompt);
+    alert("Entwurf wurde in Gmail angelegt. Bitte in Gmail prüfen und selbst versenden.");
+  }catch(e){alert("Fehler beim Anlegen des Entwurfs: "+e.message);}
+  btn.disabled=false;btn.textContent="Als Gmail-Entwurf anlegen";
+}
+
+// ===== Verlauf (persistente Speicherung) =====
+async function saveHistory(o){
+  try{
+    var key="angebot:"+Date.now();
+    await window.storage.set(key,JSON.stringify({gast:o.gast,uid:o.uid,von:o.von,bis:o.bis,inv:o.inv,text:o.text,created:new Date().toISOString()}));
+  }catch(e){}
+  renderHistory();
+}
+async function renderHistory(){
+  var body=document.getElementById("histBody");
+  try{
+    var list=await window.storage.list("angebot:");
+    if(!list||!list.keys||!list.keys.length){body.innerHTML='<p class="note">Noch keine Angebote erstellt.</p>';return;}
+    var keys=list.keys.slice().sort().reverse().slice(0,20);
+    var html="";
+    for(var i=0;i<keys.length;i++){
+      var r=await window.storage.get(keys[i]);
+      if(!r)continue;
+      var d=JSON.parse(r.value);
+      html+='<div class="hist"><span>'+(d.gast||"")+" &middot; "+(d.inv||"")+" &middot; "+fmt(d.von)+"-"+fmt(d.bis)+'</span><a onclick=\'showHistEntry(`'+d.text.replace(/`/g,"'")+'`)\'>anzeigen</a></div>';
+    }
+    body.innerHTML=html;
+  }catch(e){body.innerHTML='<p class="note">Verlauf konnte nicht geladen werden.</p>';}
+}
+function showHistEntry(text){
+  document.getElementById("offerText").textContent=text;
+  document.getElementById("offerCard").classList.remove("hidden");
+  document.getElementById("btnWA").style.display="none";
+  document.getElementById("btnMail").style.display="none";
+  window._lastOffer={text:text};
+  document.getElementById("offerCard").scrollIntoView({behavior:"smooth"});
+}
+function toggleHist(){
+  var b=document.getElementById("histBody");
+  b.classList.toggle("hidden");
+  document.getElementById("histArrow").innerHTML=b.classList.contains("hidden")?"&#9656;":"&#9662;";
+  if(!b.classList.contains("hidden"))renderHistory();
+}
+</script>
+</body>
+</html>
