@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Duenenvilla Buchungssystem</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;500;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#1a5276;--bd:#0e3651;--ac:#2e86c1;--fr:#d4edda;--fb:rgba(40,167,69,.35);--ft:#155724;--bk:#f8d7da;--bb:rgba(192,57,43,.3);--bt:#721c24;--anf:#fff3cd;--ab:rgba(230,126,34,.35);--at:#856404;--r:5px;--paid:#d4edda;--part:#fff3cd;--open:#f8d7da}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:linear-gradient(135deg,#e8f0e4,#dde8d5 50%,#e0e8d8);min-height:100vh;padding:16px;color:#1a1a2e;font-size:14px}
+.ctr{max-width:1600px;margin:0 auto}
+header{text-align:center;margin-bottom:16px}
+header h1{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--bd)}
+header h1 span{display:block;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:400;color:#6b7280;letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+.badge{display:inline-block;padding:3px 12px;border-radius:20px;font-size:.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin:4px 2px}
+.badge-admin{background:#e74c3c;color:#fff}
+.badge-count{background:var(--ac);color:#fff}
+.card{background:#fff;border-radius:12px;box-shadow:0 3px 16px rgba(0,0,0,.06);overflow:hidden;margin-bottom:20px}
+.ch{padding:12px 18px;position:relative;overflow:hidden;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ch::before{content:'';position:absolute;inset:0;opacity:.12;background:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(255,255,255,.4) 10px,rgba(255,255,255,.4) 20px)}
+.ch h2{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;position:relative;z-index:1}
+.ch .stats{position:relative;z-index:1;margin-left:auto;font-size:.78rem;font-weight:600}
+.hb{background:linear-gradient(135deg,var(--blue),var(--bd))}.hb h2,.hb .stats{color:#fff}
+.hl{background:linear-gradient(135deg,#85c1e9,#5dade2)}.hl h2{color:var(--bd)}
+.hg{background:linear-gradient(135deg,#82e0aa,#58d68d)}.hg h2{color:#145a32}
+.ho{background:linear-gradient(135deg,#f39c12,#e67e22)}.ho h2{color:#fff}
+.hr{background:linear-gradient(135deg,#e74c3c,#c0392b)}.hr h2{color:#fff}
+.cb{padding:16px}
+/* Tabs */
+.tabs{display:flex;gap:3px;margin-bottom:14px;flex-wrap:wrap}
+.tab{padding:8px 16px;border:2px solid #e0e7ef;border-radius:8px 8px 0 0;background:#f0f4f8;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;color:#6b7280;border-bottom:none}
+.tab:hover{background:#e0e7ef}
+.tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.tab .tc{display:inline-block;background:rgba(255,255,255,.3);border-radius:10px;padding:1px 7px;font-size:.68rem;margin-left:4px}
+.tab.active .tc{background:rgba(255,255,255,.25)}
+.tp{display:none}.tp.active{display:block}
+/* Form */
+.fg{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:10px}
+.fi{display:flex;flex-direction:column;gap:3px}
+.fi label{font-size:.65rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.8px}
+.fi input,.fi select,.fi textarea{padding:6px 8px;border:2px solid #e0e7ef;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.82rem;background:#f8fafc}
+.fi input:focus,.fi select:focus,.fi textarea:focus{outline:none;border-color:var(--ac);background:#fff}
+.fi input[type="date"]{min-width:130px}
+.fi input[type="text"]{min-width:130px}
+.fi input[type="number"]{width:52px;text-align:center}
+.fi input[type="email"]{min-width:160px}
+.fi textarea{min-width:200px;height:50px;resize:vertical}
+.btn{padding:6px 14px;border:none;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;transition:background .2s}
+.btn-add{background:var(--ac);color:#fff}.btn-add:hover{background:var(--blue)}
+.btn-save{background:#28a745;color:#fff}.btn-save:hover{background:#1e7e34}
+.btn-exp{background:#2e86c1;color:#fff}
+.btn-imp{background:#e67e22;color:#fff}
+.btn-wa{background:#25d366;color:#fff}
+.btn-mail{background:#28a745;color:#fff}
+.btn-inv{background:#8e44ad;color:#fff}
+.btn-sm{padding:3px 8px;font-size:.72rem}
+.save-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.save-msg{font-size:.7rem;color:#28a745;font-weight:600;opacity:0;transition:opacity .3s}
+.save-msg.vis{opacity:1}
+.note{font-size:.68rem;color:#6b7280;margin-top:4px}
+/* Season */
+.sg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.sc{border:2px solid #e0e7ef;border-radius:8px;padding:8px 12px;background:#fafcff;flex:1;min-width:160px}
+.sc h4{font-size:.7rem;color:var(--bd);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.sc h4 .dot{width:10px;height:10px;border-radius:50%}
+.s-off .dot{background:#82c9e0}.s-neb .dot{background:#f7dc6f}.s-hau .dot{background:#e74c3c}
+.sc .sr{display:flex;gap:5px;align-items:center;font-size:.75rem;margin-bottom:2px}
+.sc input[type="number"]{width:55px;padding:3px 5px;border:2px solid #e0e7ef;border-radius:5px;font-size:.8rem;font-weight:700;text-align:center}
+/* Table */
+.bt{margin-top:10px;overflow-x:auto}
+.bt table{width:100%;border-collapse:collapse;font-size:.75rem}
+.bt th{background:var(--blue);color:#fff;padding:5px 6px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.bt td{padding:4px 6px;border-bottom:1px solid #eee;white-space:nowrap}
+.bt tr:hover{background:#f0f8ff}
+.bt .del{background:#e74c3c;color:#fff;border:none;border-radius:3px;padding:2px 6px;cursor:pointer;font-size:.68rem;font-weight:700}
+.pay-open{background:var(--open);font-weight:700}
+.pay-part{background:var(--part);font-weight:700}
+.pay-full{background:var(--paid)}
+.pay-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:.65rem;font-weight:700}
+.pb-open{background:#e74c3c;color:#fff}
+.pb-anz{background:#e67e22;color:#fff}
+.pb-paid{background:#28a745;color:#fff}
+/* Calendar */
+.pb2{padding:10px 12px;overflow-x:auto}
+.ml{font-weight:700;font-size:.75rem;color:var(--blue);text-transform:uppercase;letter-spacing:1.2px;margin:12px 0 3px 2px}
+.ml:first-child{margin-top:0}
+.wr{display:grid;grid-template-columns:repeat(7,56px);gap:2px;margin-bottom:2px}
+.wc{height:18px;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:700;text-transform:uppercase;border-radius:3px}
+.wn{background:#dbeafe;color:#1e40af}.wf{background:#fef3e0;color:#e67e22}.wfs{background:#fef3e0;color:#e67e22;font-weight:800}.ws{background:#fce4ec;color:#c0392b;font-weight:800}
+.dg{display:grid;grid-template-columns:repeat(7,56px);gap:2px}
+.dc{width:56px;height:52px;border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid transparent;position:relative;cursor:default;transition:transform .1s,box-shadow .1s}
+.dc:hover:not(.em){transform:scale(1.1);box-shadow:0 3px 12px rgba(0,0,0,.16);z-index:10}
+.dc.em{background:transparent;border:none;pointer-events:none}
+.dc .dn{font-size:.72rem;font-weight:800;opacity:.6;line-height:1;margin-bottom:1px}
+.dc .pr{font-size:1.1rem;font-weight:800;line-height:1}
+.dc .pr .eu{font-size:.45rem;font-weight:600;opacity:.6;vertical-align:super}
+.dc .gn{font-size:.42rem;font-weight:700;text-transform:uppercase;line-height:1;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 1px}
+.dc .hd{font-size:.36rem;font-weight:800;color:#b91c1c;position:absolute;bottom:2px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dc.dsa:not(.em){border-color:#e67e22!important;border-width:2px}
+.dc.dso:not(.em){border-color:#c0392b!important;border-width:2px}
+.dc.dft:not(.em){border-color:#b91c1c!important;border-width:2.5px}
+.dc.xfr{background:var(--fr);border-color:var(--fb);color:var(--ft)}
+.dc.xfr .pr{color:#155724}
+.dc.xbk{background:var(--bk);border-color:var(--bb);color:var(--bt);cursor:pointer}
+.dc.xanf{background:var(--anf);border-color:var(--ab);color:var(--at);cursor:pointer}
+.dc.xar{background:linear-gradient(135deg,var(--fr) 50%,var(--bk) 50%);border-color:var(--bb);cursor:pointer}
+.dc.xab{background:linear-gradient(135deg,var(--bk) 50%,var(--fr) 50%);border-color:var(--fb);cursor:pointer}
+.dc.xara{background:linear-gradient(135deg,var(--fr) 50%,var(--anf) 50%);border-color:var(--ab);cursor:pointer}
+.dc.xaba{background:linear-gradient(135deg,var(--anf) 50%,var(--fr) 50%);border-color:var(--fb);cursor:pointer}
+.dc.xwech{position:relative}
+.dc.xwech::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(to bottom right,transparent calc(50% - 1px),#fff calc(50% - 1px),#fff calc(50% + 1px),transparent calc(50% + 1px));z-index:1;pointer-events:none;border-radius:var(--r)}
+.dc.xwech.xab{background:linear-gradient(135deg,var(--bk) 50%,var(--bk) 50%)!important;border-color:var(--bb)!important;color:var(--bt)}
+.dc.xwech.xar{background:linear-gradient(135deg,var(--bk) 50%,var(--bk) 50%)!important;border-color:var(--bb)!important;color:var(--bt)}
+.dc.xwech.xaba{background:linear-gradient(135deg,var(--anf) 50%,var(--anf) 50%)!important;border-color:var(--ab)!important;color:var(--at)}
+.dc.xwech.xara{background:linear-gradient(135deg,var(--anf) 50%,var(--anf) 50%)!important;border-color:var(--ab)!important;color:var(--at)}
+.dc.xwech-bk-bk{background:var(--bk)!important;border-color:var(--bb)!important;color:var(--bt)}
+.dc.xwech-bk-anf{background:linear-gradient(135deg,var(--bk) 50%,var(--anf) 50%)!important;border-color:var(--bb)!important}
+.dc.xwech-anf-bk{background:linear-gradient(135deg,var(--anf) 50%,var(--bk) 50%)!important;border-color:var(--bb)!important}
+.dc.xwech-anf-anf{background:var(--anf)!important;border-color:var(--ab)!important;color:var(--at)}
+.dc[data-tooltip]:hover::after{content:attr(data-tooltip);position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;padding:4px 8px;border-radius:5px;font-size:.65rem;white-space:nowrap;z-index:100;box-shadow:0 3px 10px rgba(0,0,0,.25);pointer-events:none}
+/* Modal */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px}
+.md{background:#fff;border-radius:12px;padding:22px;max-width:600px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto}
+.md h3{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--bd);margin-bottom:8px}
+.md p{font-size:.82rem;color:#444;line-height:1.5;margin-bottom:10px}
+.md .det{background:#f0f4f8;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:.8rem;line-height:1.6}
+.md pre{background:#f0f4f8;border-radius:6px;padding:10px;font-size:.75rem;white-space:pre-wrap;word-wrap:break-word;max-height:300px;overflow-y:auto;margin-bottom:10px;font-family:'DM Sans',monospace}
+.mbtns{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.mb{padding:6px 14px;border:none;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer}
+.mb-c{background:#e0e7ef;color:#444}.mb-d{background:#e74c3c;color:#fff}.mb-ok{background:var(--ac);color:#fff}.mb-wa{background:#25d366;color:#fff}.mb-inv{background:#8e44ad;color:#fff}.mb-mail{background:#2980b9;color:#fff}
+/* Payment modal */
+.pay-form{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin:10px 0}
+.pay-form input{padding:5px 8px;border:2px solid #e0e7ef;border-radius:5px;font-size:.82rem}
+.pay-form input[type="number"]{width:80px}
+.pay-form input[type="date"]{width:140px}
+/* Dashboard */
+.dash{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:16px}
+.dash-card{background:#fff;border-radius:10px;padding:14px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.dash-card .num{font-size:1.8rem;font-weight:800;color:var(--bd)}
+.dash-card .lbl{font-size:.72rem;color:#6b7280;text-transform:uppercase;letter-spacing:.5px}
+.ftr{text-align:center;margin-top:16px;padding:10px;color:#6b7280;font-size:.7rem}
+@media(max-width:768px){header h1{font-size:1.3rem}.fg{flex-direction:column}.dc{width:42px;height:40px}.dc .pr{font-size:.85rem}.dc .dn{font-size:.62rem}.dc .gn{font-size:.36rem}.wr,.dg{grid-template-columns:repeat(7,42px)}body{padding:8px}.tabs{gap:2px}.tab{padding:5px 8px;font-size:.72rem}.dash{grid-template-columns:1fr 1fr}}
+</style>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DV Buchung">
+<meta name="theme-color" content="#1a5276">
+</head>
+<body>
+<div class="ctr">
+<header>
+  <h1>Duenenvilla Buchungssystem<span>Im Duenenwald 4a - 18586 Thiessow - Ruegen</span></h1>
+  <div class="badge badge-admin">Admin</div>
+  <button class="badge" style="background:var(--ac);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif" onclick="installApp()">+ App installieren</button>
+</header>
+
+<!-- Dashboard -->
+<div class="dash" id="dash"></div>
+
+<!-- Tabs -->
+<div class="tabs" id="tabs"></div>
+<div id="panels"></div>
+
+<!-- REINIGUNGSPLAN -->
+<div class="card">
+  <div class="ch hr"><h2>Reinigungsplan (2 Monate)</h2><div class="stats" id="rpStats" style="color:#fff"></div></div>
+  <div class="cb">
+    <div class="bt" id="rpTable"></div>
+    <div style="margin-top:10px">
+      <button class="btn btn-wa" onclick="sendRP()">Reinigungsplan per WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- Gmail-Anfragen -->
+<div id="gmailBox"></div>
+
+<!-- Kurabgabe Saetze -->
+<div id="kurBox"></div>
+
+<!-- Global save/export -->
+<div class="card">
+  <div class="ch hb"><h2>Datenverwaltung</h2></div>
+  <div class="cb">
+    <div class="save-row">
+      <button class="btn btn-save" onclick="saveAll()">Alle speichern</button>
+      <button class="btn btn-exp" onclick="exportAll()">Export JSON</button>
+      <button class="btn btn-imp" onclick="document.getElementById('impF').click()">Import JSON</button>
+      <input type="file" id="impF" accept=".json" style="display:none" onchange="importAll(this)">
+      <span class="save-msg" id="sMsg"></span>
+    </div>
+    <div class="note">Bankverbindung: Annelie-Clara Fries - Sparda-Bank - BIC GENODEF1S10 - IBAN DE44 1209 6597 0007 5732 19</div>
+  </div>
+</div>
+
+<div class="ftr" id="ftrEl"></div>
+</div>
+<div id="modal"></div>
+
+<script>
+var MAIL="fries"+"h@gm"+"x.de";
+var ADMINWA="4915122833699";
+var BANK="Annelie-Clara Fries\nSparda-Bank\nBIC: GENODEF1S10\nIBAN: DE44 1209 6597 0007 5732 19";
+document.getElementById("ftrEl").textContent="Annelie-Clara Fries - Duenenvilla - Im Duenenwald 4a - 18586 Thiessow - "+MAIL;
+
+var UNITS=[
+  {id:"dv3",name:"Duenenvilla 3",short:"DV3",qm:70,sz:2,pers:5,clean:85,dog:5,laundry:25,extra:5,off:95,neb:110,hau:130},
+  {id:"dv5",name:"Duenenvilla 5",short:"DV5",qm:46,sz:1,pers:4,clean:85,dog:5,laundry:25,extra:5,off:85,neb:95,hau:110},
+  {id:"sv8a",name:"Strandvilla 8a",short:"SV8a",qm:170,sz:3,pers:6,clean:180,dog:5,laundry:25,extra:5,off:165,neb:195,hau:220},
+  {id:"sv8b",name:"Strandvilla 8b",short:"SV8b",qm:170,sz:3,pers:6,clean:180,dog:5,laundry:25,extra:5,off:165,neb:195,hau:220}
+];
+
+var MI=["Januar","Februar","Maerz","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+var DN=["So","Mo","Di","Mi","Do","Fr","Sa"];
+var WL=["Mo","Di","Mi","Do","Fr","Sa","So"];
+var WCC=["wn","wn","wn","wn","wf","wfs","ws"];
+
+var FT={"2026-01-01":"Neujahr","2026-04-03":"Karfreitag","2026-04-06":"Ostermontag","2026-05-01":"Maifeiertag","2026-05-14":"Himmelfahrt","2026-05-25":"Pfingstmontag","2026-10-03":"Tag d.Einheit","2026-10-31":"Reformationstag","2026-12-25":"Weihnachten","2026-12-26":"2.Weihnachten","2026-12-31":"Silvester","2027-01-01":"Neujahr","2027-03-26":"Karfreitag","2027-03-29":"Ostermontag","2027-05-01":"Maifeiertag","2027-05-06":"Himmelfahrt","2027-05-17":"Pfingstmontag","2027-10-03":"Tag d.Einheit","2027-10-31":"Reformationstag","2027-12-25":"Weihnachten","2027-12-26":"2.Weihnachten"};
+var ftDates=[];for(var k in FT){ftDates.push(new Date(k+"T00:00:00").getTime());}
+function isNearFT(date){var t=date.getTime(),d=864e5;for(var i=0;i<ftDates.length;i++){var diff=t-ftDates[i];if(diff>=-3*d&&diff<=1*d)return true;}return false;}
+function getSeason(d){var m=d.getMonth()+1,dy=d.getDate(),y=d.getFullYear();if(y===2027&&m===1&&dy<=5)return"hau";if(m===12&&dy>=23)return"hau";if((m===6&&dy>=16)||m===7||m===8||(m===9&&dy<=14))return"hau";if(isNearFT(d))return"hau";if(m===5||(m===6&&dy<=15))return"neb";if((m===9&&dy>=15)||m===10)return"neb";return"off";}
+
+// === KURABGABE (Kurkarte) Moenchgut ===
+// HS: 01.05.-31.10. + 20.12.-06.01. | NS: Rest des Jahres
+// === GMAIL-ANFRAGEN (automatische Erkennung per Apps Script + Claude) ===
+var GAS_TOKEN = "dv8-Kx92mPqR7w";
+var GKEY = "duenenvilla_gas_url";
+var GAS_ANFRAGEN_URL = localStorage.getItem(GKEY) || "";
+function buildGmailBox(){
+  var h = '<div class="card"><div class="ch hg"><h2>Gmail-Anfragen (automatisch erkannt)</h2></div><div class="cb">';
+  h += '<div class="note">Apps-Script-URL einmalig eintragen (nach Deployment). Laeuft automatisch 1x taeglich, kann hier auch manuell angestossen werden.</div>';
+  h += '<div class="fg" style="margin-top:8px">';
+  h += '<div class="fi" style="flex:1 1 100%"><label>Apps-Script Web-App URL</label><input type="text" id="gas_url" value="' + GAS_ANFRAGEN_URL.replace(/"/g,'&quot;') + '" placeholder="https://script.google.com/macros/s/XXXXX/exec" onchange="saveGasUrl()"></div>';
+  h += '</div>';
+  h += '<button class="btn btn-add" onclick="loadGmailAnfragen()">Jetzt abrufen</button>';
+  h += '<div class="note" id="gmailSt" style="margin-top:6px"></div>';
+  h += '</div></div>';
+  return h;
+}
+function saveGasUrl(){
+  GAS_ANFRAGEN_URL = document.getElementById("gas_url").value.trim();
+  localStorage.setItem(GKEY, GAS_ANFRAGEN_URL);
+  showSt("Apps-Script-URL gespeichert");
+}
+function mapObjekt(o){
+  var f = UNITS.find(function(u){ return u.id === o; });
+  return f ? f.id : null;
+}
+function loadGmailAnfragen(){
+  if(!GAS_ANFRAGEN_URL){ alert("Bitte zuerst die Apps-Script Web-App URL eintragen."); return; }
+  var st = document.getElementById("gmailSt");
+  st.textContent = "Lade...";
+  fetch(GAS_ANFRAGEN_URL + "?token=" + encodeURIComponent(GAS_TOKEN))
+    .then(function(r){ return r.json(); })
+    .then(function(items){
+      if(items.error){ st.textContent = "Fehler: " + items.error; return; }
+      if(!items.length){ st.textContent = "Keine neuen Anfragen."; return; }
+      var importedRows = [];
+      items.forEach(function(it){
+        var uid = mapObjekt(it.objekt) || activeTab;
+        var hinweis = it.hinweis || "";
+        if(!mapObjekt(it.objekt)) hinweis = "Objekt unsicher (war: '" + (it.objekt||'?') + "') - bitte pruefen! " + hinweis;
+        var pers = parseInt(it.pers) || 2;
+        var entry = {
+          von: it.von || "", bis: it.bis || "", gast: it.gast || "(unbekannt)", email: it.email || "",
+          phone: it.telefon || "", strasse: "", plzort: "", pers: pers, hunde: parseInt(it.hunde) || 0,
+          kurErw: pers, kurKind: 0, kurBeh: 0, waesche: false, source: it.quelle || "Gmail-Anfrage",
+          anfrage: true, reviewFlag: true, hinweis: hinweis, gmailId: it.id,
+          _id: DATA[uid].nextId++, confirmed: false, buchDatum: dk(TODAY),
+          total: 0, accom: 0, extraFee: 0, dogFee: 0, waescheFee: 0, cleanFee: 0, kurFee: 0,
+          anzahlung: { amount: 0, date: "", paid: false }, restzahlung: { amount: 0, date: "", paid: false }, notes: ""
+        };
+        DATA[uid].bookings.push(entry);
+        importedRows.push(it.row);
+      });
+      saveAll(true); renderAll();
+      st.textContent = items.length + " Anfrage(n) importiert - mit ⚠ markiert, bitte pruefen.";
+      return fetch(GAS_ANFRAGEN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: GAS_TOKEN, action: "markImported", rows: importedRows })
+      });
+    })
+    .catch(function(err){ st.textContent = "Fehler beim Abrufen: " + err.message; });
+}
+
+var KKEY="duenenvilla_kurtaxe_raten";
+var KURTAXE={active:true,hs:{erw:3.37,kind:1.69,beh:1.69},ns:{erw:2.54,kind:1.27,beh:1.27},hund:1.00};
+function loadKur(){try{var r=localStorage.getItem(KKEY);if(r){var d=JSON.parse(r);if(d&&d.hs&&d.ns)KURTAXE=d;}}catch(e){}}
+function saveKur(){try{localStorage.setItem(KKEY,JSON.stringify(KURTAXE));}catch(e){}}
+loadKur();
+function getKurSeason(d){var m=d.getMonth()+1,dy=d.getDate();if(m>=5&&m<=10)return"hs";if(m===12&&dy>=20)return"hs";if(m===1&&dy<=6)return"hs";return"ns";}
+// b: {von,bis,hunde,pers,kurErw,kurKind,kurBeh}. kurErw default = pers falls nicht gesetzt.
+function calcKurtaxe(b){
+  if(!KURTAXE.active)return{total:0,hsN:0,nsN:0,days:0};
+  var dV=pd(b.von),dB=pd(b.bis);
+  var erw=(b.kurErw!=null?b.kurErw:(b.pers||0));
+  var kind=b.kurKind||0,beh=b.kurBeh||0,hunde=b.hunde||0;
+  var d=new Date(dV),total=0,hsN=0,nsN=0,days=0;
+  while(d<=dB){ // Kurtaxe wird in TAGEN berechnet: An- und Abreisetag zaehlen jeweils mit
+    var s=getKurSeason(d),r=KURTAXE[s];
+    total+=erw*r.erw+kind*r.kind+beh*r.beh+hunde*KURTAXE.hund;
+    if(s==="hs")hsN++;else nsN++;
+    days++;
+    d.setDate(d.getDate()+1);
+  }
+  return{total:Math.round(total*100)/100,hsN:hsN,nsN:nsN,days:days};
+}
+function buildKurBox(){
+  var k=KURTAXE;
+  var h='<div class="card"><div class="ch hg"><h2>Kurabgabe (Kurtaxe) Saetze - Moenchgut</h2></div><div class="cb">';
+  h+='<div class="note">Hochsaison (HS): 01.05.-31.10. + 20.12.-06.01.  |  Nebensaison (NS): Rest des Jahres. Kinder unter 7 Jahre sind frei.</div>';
+  h+='<div class="fg" style="margin-top:8px">';
+  h+='<div class="fi"><label>Aktiv?</label><select id="ku_active" onchange="chgKur()"><option value="1"'+(k.active?' selected':'')+'>Ja</option><option value="0"'+(!k.active?' selected':'')+'>Nein</option></select></div>';
+  h+='<div class="fi"><label>HS Erw. EUR/N</label><input type="number" step="0.01" id="ku_hs_erw" value="'+k.hs.erw+'" onchange="chgKur()"></div>';
+  h+='<div class="fi"><label>NS Erw. EUR/N</label><input type="number" step="0.01" id="ku_ns_erw" value="'+k.ns.erw+'" onchange="chgKur()"></div>';
+  h+='<div class="fi"><label>HS Kind 7-14</label><input type="number" step="0.01" id="ku_hs_kind" value="'+k.hs.kind+'" onchange="chgKur()"></div>';
+  h+='<div class="fi"><label>NS Kind 7-14</label><input type="number" step="0.01" id="ku_ns_kind" value="'+k.ns.kind+'" onchange="chgKur()"></div>';
+  h+='<div class="fi"><label>HS Schwerbeh.</label><input type="number" step="0.01" id="ku_hs_beh" value="'+k.hs.beh+'" onchange="chgKur()"></div>';
+  h+='<div class="fi"><label>NS Schwerbeh.</label><input type="number" step="0.01" id="ku_ns_beh" value="'+k.ns.beh+'" onchange="chgKur()"></div>';
+  h+='<div class="fi"><label>Hund EUR/N</label><input type="number" step="0.01" id="ku_hund" value="'+k.hund+'" onchange="chgKur()"></div>';
+  h+='</div><div class="note">Aenderung gilt nur fuer NEUE Buchungen. Bereits gespeicherte Kurabgaben werden NICHT automatisch ueberschrieben.</div>';
+  h+='</div></div>';
+  return h;
+}
+function chgKur(){
+  KURTAXE.active=document.getElementById("ku_active").value==="1";
+  KURTAXE.hs.erw=parseFloat(document.getElementById("ku_hs_erw").value)||0;
+  KURTAXE.ns.erw=parseFloat(document.getElementById("ku_ns_erw").value)||0;
+  KURTAXE.hs.kind=parseFloat(document.getElementById("ku_hs_kind").value)||0;
+  KURTAXE.ns.kind=parseFloat(document.getElementById("ku_ns_kind").value)||0;
+  KURTAXE.hs.beh=parseFloat(document.getElementById("ku_hs_beh").value)||0;
+  KURTAXE.ns.beh=parseFloat(document.getElementById("ku_ns_beh").value)||0;
+  KURTAXE.hund=parseFloat(document.getElementById("ku_hund").value)||0;
+  saveKur();showSt("Kurtaxe-Saetze gespeichert");
+}
+
+var TODAY=new Date();TODAY.setHours(0,0,0,0);
+function dk(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function pd(s){return new Date(s+"T00:00:00")}
+function sd(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
+function fmt(s){return s.split("-").reverse().join(".")}
+var tstr=dk(TODAY);
+
+var DATA={};var SKEY="duenenvilla_2026_complete";
+function initData(){UNITS.forEach(function(u){DATA[u.id]={bookings:[],nextId:1,prices:{off:u.off,neb:u.neb,hau:u.hau}};});}
+initData();
+
+function getPrice(uid,date){var s=getSeason(date);return DATA[uid].prices[s];}
+function calcTotal(uid,von,bis){var dV=pd(von),dB=pd(bis),sum=0,d=new Date(dV);while(d<dB){sum+=getPrice(uid,d);d.setDate(d.getDate()+1);}return sum;}
+
+function getInfo(uid,date){
+  var bks=DATA[uid].bookings;
+  for(var i=0;i<bks.length;i++){var b=bks[i],v=pd(b.von),bs=pd(b.bis),isA=!!b.anfrage;
+    if(sd(date,v))return{s:isA?"xara":"xar",g:b.gast,a:isA,b:b};
+    if(sd(date,bs))return{s:isA?"xaba":"xab",g:b.gast,a:isA,b:b};
+    if(date>v&&date<bs)return{s:isA?"xanf":"xbk",g:b.gast,a:isA,b:b};
+  }
+  return{s:"xfr",g:"",a:false,b:null};
+}
+
+function isWechsel(uid,date){
+  var bks=DATA[uid].bookings,abB=null,anB=null;
+  for(var i=0;i<bks.length;i++){
+    var b=bks[i];
+    if(sd(date,pd(b.bis)))abB=b;
+    if(sd(date,pd(b.von)))anB=b;
+  }
+  if(abB&&anB)return{w:true,abAnf:!!abB.anfrage,anAnf:!!anB.anfrage,abGast:abB.gast,anGast:anB.gast,abB:abB,anB:anB};
+  return{w:false};
+}
+
+function findOv(uid,von,bis,exId){var bks=DATA[uid].bookings,nV=pd(von),nB=pd(bis);return bks.filter(function(b){if(exId&&b._id===exId)return false;var bV=pd(b.von),bB=pd(b.bis);return nV<bB&&nB>bV&&!sd(nV,bB)&&!sd(nB,bV);});}
+
+// Booking entry with full payment tracking
+// b = {von,bis,gast,email,phone,pers,hunde,anfrage,_id,
+//      total,cleaning,dogFee,laundryFee,accom,
+//      anzahlung:{amount,date,paid},
+//      restzahlung:{amount,date,paid},
+//      confirmed,invoiceNr,notes,source}
+
+function getStoredCost(uid,b){
+  var u=UNITS.find(function(x){return x.id===uid;});
+  if(!b.total){
+    var c=calcBookingCost(uid,b);
+    c.rest=Math.floor((c.total/2)/10)*10;
+    c.anz=Math.round((c.total-c.rest)*100)/100;
+    c.live=true;
+    return c;
+  }
+  var nights=Math.round((pd(b.bis)-pd(b.von))/864e5);
+  return{
+    total:b.total||0,nights:nights,accom:b.accom||0,seasonBreakdown:b.seasonBreakdown||null,
+    extraPersCount:Math.max(0,(b.pers||0)-2),extraRate:(b.extraRate!=null?b.extraRate:(u?u.extra:0))||0,
+    extraFee:b.extraFee||0,dogFee:b.dogFee||0,waescheFee:b.waescheFee||0,cleaning:b.cleanFee||0,
+    kurFee:b.kurFee||0,kurDays:(b.kurDays!=null?b.kurDays:nights+1),kurHsN:b.kurHsN||0,kurNsN:b.kurNsN||0,
+    subtotal:Math.round(((b.accom||0)+(b.extraFee||0)+(b.dogFee||0)+(b.waescheFee||0)+(b.cleanFee||0))*100)/100,
+    anz:(b.anzahlung?b.anzahlung.amount:0),rest:(b.restzahlung?b.restzahlung.amount:0)
+  };
+}
+
+function calcBookingCost(uid,b){
+  var u=UNITS.find(function(x){return x.id===uid;});
+  var n=Math.round((pd(b.bis)-pd(b.von))/864e5);
+  var dV=pd(b.von),dB=pd(b.bis),d=new Date(dV),seasonNights={off:0,neb:0,hau:0};
+  while(d<dB){seasonNights[getSeason(d)]++;d.setDate(d.getDate()+1);}
+  var accom=0,seasonBreakdown=[];
+  ["off","neb","hau"].forEach(function(s){
+    if(seasonNights[s]>0){
+      var rate=DATA[uid].prices[s],sub=seasonNights[s]*rate;
+      accom+=sub;
+      seasonBreakdown.push({season:s,nights:seasonNights[s],rate:rate,subtotal:sub});
+    }
+  });
+  var extraPersCount=Math.max(0,(b.pers||0)-2);
+  var extraRate=u.extra||0;
+  var extraFee=extraPersCount*extraRate*n;
+  var dogFee=(b.hunde||0)*u.dog*n;
+  var waescheFee=b.waesche?(b.pers||0)*u.laundry:0;
+  var kur=calcKurtaxe(b);
+  var subtotal=Math.round((accom+extraFee+dogFee+waescheFee+u.clean)*100)/100;
+  var total=Math.round((subtotal+kur.total)*100)/100;
+  return{accom:accom,seasonBreakdown:seasonBreakdown,nights:n,extraPersCount:extraPersCount,extraRate:extraRate,extraFee:extraFee,dogFee:dogFee,waescheFee:waescheFee,cleaning:u.clean,subtotal:subtotal,total:total,laundry:u.laundry,kurFee:kur.total,kurDays:kur.days,kurHsN:kur.hsN,kurNsN:kur.nsN};
+}
+
+function genInvNr(uid,von){return uid.toUpperCase().replace("dv","DV").replace("sv","SV")+"-"+von.replace(/-/g,"");}
+function eur(x){return (Math.round((x||0)*100)/100).toFixed(2);}
+
+function buildPositionsText(uid,b,cost){
+  var u=UNITS.find(function(x){return x.id===uid;});
+  var t="";
+  t+="Unterkunft (2 Pers. inkl.):\n";
+  if(cost.seasonBreakdown&&cost.seasonBreakdown.length){
+    cost.seasonBreakdown.forEach(function(sb){
+      var snm=sb.season==="hau"?"Hauptsaison":(sb.season==="neb"?"Nebensaison":"Nebenzeit");
+      t+="  "+sb.nights+" Naechte "+snm+" x "+eur(sb.rate)+" EUR  =  "+eur(sb.subtotal)+" EUR\n";
+    });
+  }else{
+    t+="  "+cost.nights+" Naechte  =  "+eur(cost.accom)+" EUR\n";
+  }
+  if(cost.extraPersCount>0)t+="Zusatzpersonen: "+cost.extraPersCount+" Pers. x "+eur(cost.extraRate)+" EUR x "+cost.nights+" Naechte  =  "+eur(cost.extraFee)+" EUR\n";
+  if(b.hunde)t+="Hunde: "+b.hunde+" x "+eur(u.dog)+" EUR x "+cost.nights+" Naechte  =  "+eur(cost.dogFee)+" EUR\n";
+  if(cost.waescheFee)t+="Waeschepaket: "+(b.pers||0)+" Pers. x "+eur(u.laundry)+" EUR  =  "+eur(cost.waescheFee)+" EUR\n";
+  else t+="Waeschepaket: ohne\n";
+  t+="Endreinigung:  "+eur(cost.cleaning)+" EUR\n";
+  t+="Zwischensumme:  "+eur(cost.subtotal)+" EUR\n\n";
+  var kErw=(b.kurErw!=null?b.kurErw:(b.pers||0)),kKind=b.kurKind||0,kBeh=b.kurBeh||0;
+  t+="Kurabgabe (Kurtaxe), "+cost.kurDays+" Tage (inkl. An- und Abreisetag):\n";
+  t+="  "+kErw+" Erwachsene";
+  if(kKind)t+="  /  "+kKind+" Kind(er) 7-14 Jahre";
+  if(kBeh)t+="  /  "+kBeh+" Schwerbeh. 80%+";
+  t+="\n  Kurabgabe gesamt:  "+eur(cost.kurFee)+" EUR\n\n";
+  t+="ENDBETRAG:  "+eur(cost.total)+" EUR\n";
+  return t;
+}
+
+// === TEMPLATES ===
+function tplAngebot(uid,b,cost){
+  var u=UNITS.find(function(x){return x.id===uid;});
+  var inv=b.invoiceNr||genInvNr(uid,b.von);
+  var n=Math.round((pd(b.bis)-pd(b.von))/864e5);
+  var anz=cost.anz,rest=cost.rest;
+  var today=fmt(dk(TODAY));
+  var anzFrist=new Date(TODAY);anzFrist.setDate(anzFrist.getDate()+7);
+  var anreise=pd(b.von);var restFrist=new Date(anreise);restFrist.setDate(restFrist.getDate()-7);
+  var t="";
+  t+=u.name+"\nIm Duenenwald 4a\n18586 Ostseebad Moenchgut OT Thiessow\n";
+  t+="www.duenenvilla.de\nwww.ruegen-hundeurlaub.de\n\n";
+  t+="Angebot Nr: "+inv+"  vom  "+today+"\n\n";
+  t+="> Traumhafte gelegene DUENENVILLA zw 3 Meeren mit Strandzugang!\n\n";
+  t+="Anrede: "+(b.gast.includes("Frau")?"Frau":"Herr")+"\n";
+  t+="Name: "+b.gast+"\n";
+  if(b.email)t+="E-Mail: "+b.email+"\n";
+  if(b.strasse)t+="Strasse: "+b.strasse+"\n";
+  if(b.plzort)t+="PLZ/Ort: "+b.plzort+"\n";
+  if(b.phone)t+="Telefon: "+b.phone+"\n";
+  t+="\nAnreise:      "+fmt(b.von)+"  Ab 16 Uhr\n";
+  t+="Abreise:      "+fmt(b.bis)+"  bis 10 Uhr\n";
+  t+="Aufenthalt:   "+n+" Naechte\n";
+  t+=(b.pers||2)+" Gaeste\n";
+  if(b.hunde)t+=b.hunde+" Hund(e)\n";
+  t+="\n"+buildPositionsText(uid,b,cost)+"\n";
+  t+="1.Zahlung  "+eur(anz)+" EUR  zahlbar bis  "+fmt(dk(anzFrist))+"\n";
+  t+="auf das Konto:\n"+BANK+"\n\n";
+  t+="Restzahlung  "+eur(rest)+" EUR  1 Woche vor Reiseantritt\n";
+  t+="zahlbar bis  "+fmt(dk(restFrist))+"\n";
+  t+="aufs obige Konto\n\n";
+  t+="Bitte teilen Sie uns die Namen der Mitreisenden mit und geben Sie deren Alter an, falls diese bis 14 Jahre alt sind, damit wir die Kurabgabe (Kurtaxe) korrekt in der Rechnung beruecksichtigen koennen.\n\n";
+  t+="Es gelten unsere AGBs siehe www.duenenvilla.de/AGB\n";
+  return t;
+}
+
+function tplBestaetigung(uid,b,cost){
+  var u=UNITS.find(function(x){return x.id===uid;});
+  var inv=b.invoiceNr||genInvNr(uid,b.von);
+  var n=Math.round((pd(b.bis)-pd(b.von))/864e5);
+  var rest=cost.rest;
+  var anreise=pd(b.von);var restFrist=new Date(anreise);restFrist.setDate(restFrist.getDate()-7);
+  var nachname=b.gast.split(" ").pop();
+  var t="Liebe Familie "+nachname+",\n\n";
+  t+="wir freuen uns, Ihnen Ihre Buchung zu bestaetigen!\n\n";
+  t+="Buchungs-Nr: "+inv+"\n";
+  t+="Objekt: "+u.name+"\n";
+  t+="Traumhafte gelegene Duenenvilla direkt am Sandstrand!\n\n";
+  t+="Anreise: "+fmt(b.von)+" ab 16:00 Uhr\n";
+  t+="Abreise: "+fmt(b.bis)+" bis 10:00 Uhr\n";
+  t+=n+" Naechte, "+(b.pers||2)+" Gaeste\n";
+  if(b.hunde)t+="Hunde: "+b.hunde+"\n";
+  if(b.waesche)t+="Waeschepaket: ja\n";
+  else t+="Waeschepaket: ohne (bitte eigene Bettwaesche mitbringen)\n";
+  t+="Kurabgabe (Kurtaxe), "+cost.kurDays+" Tage (inkl. An- und Abreisetag), bereits enthalten: "+eur(cost.kurFee)+" EUR\n";
+  t+="\nReisepreis: "+eur(cost.total)+" EUR\n\n";
+  t+="Restzahlung: "+eur(rest)+" EUR\n";
+  t+="zahlbar bis "+fmt(dk(restFrist))+" auf das Konto:\n"+BANK+"\n\n";
+  t+="Bitte hinterlassen Sie die Wohnung sauber.\n\n";
+  t+="Wir wuenschen Ihnen einen wunderschoenen Urlaub!\n";
+  t+="Herzliche Gruesse\nFamilie Fries\nwww.duenenvilla.de\n";
+  return t;
+}
+
+function tplRechnung(uid,b,cost){
+  var u=UNITS.find(function(x){return x.id===uid;});
+  var inv=b.invoiceNr||genInvNr(uid,b.von);
+  var n=Math.round((pd(b.bis)-pd(b.von))/864e5);
+  var anz=cost.anz,rest=cost.rest;
+  var today=fmt(dk(TODAY));
+  var anreise=pd(b.von);var restFrist=new Date(anreise);restFrist.setDate(restFrist.getDate()-7);
+  var t="";
+  t+=u.name+"\nIm Duenenwald 4a\n18586 Ostseebad Moenchgut OT Thiessow\n";
+  t+="www.duenenvilla.de\nwww.ruegen-hundeurlaub.de\n\n";
+  t+="Buchung  Nr:"+inv+"  vom  "+today+"\n\n";
+  t+="Ihre Unterkunft\n";
+  t+="> Traumhafte gelegene DUENENVILLA zw 3 Meeren mit Strandzugang!   "+u.name+"\n\n";
+  t+="Anrede: "+(b.gast.includes("Frau")?"Frau":"Herr")+"\n";
+  t+="Name: "+b.gast+"\n";
+  if(b.email)t+="E-Mail: "+b.email+"\n";
+  if(b.strasse)t+="Strasse: "+b.strasse+"\n";
+  if(b.plzort)t+="PLZ/Ort: "+b.plzort+"\n";
+  if(b.phone)t+="Telefon: "+b.phone+"\n";
+  t+="\nAnreise:      "+fmt(b.von)+"  Ab 16 Uhr\n";
+  t+="Abreise:      "+fmt(b.bis)+"  bis 10 Uhr\n";
+  t+="Aufenthalt:   "+n+" Naechte\n";
+  t+=(b.pers||2)+" Gaeste\n\n";
+  t+=buildPositionsText(uid,b,cost)+"\n";
+  t+="Anzahlung  "+eur(anz)+" EUR  (sofort faellig / bei Buchung)\n";
+  t+="auf das Konto:\n";
+  t+="Annelie-Clara Fries\nSparda-Bank\nBIC:   GENODEF1S10\nIBAN:  DE44 1209 6597 0007 5732 19\n\n";
+  t+="Restzahlung  "+eur(rest)+" EUR  1 Woche vor Reiseantritt\n";
+  t+="zahlbar bis  "+fmt(dk(restFrist))+"\naufs obige Konto\n\n";
+  t+="Es gelten unsere AGBs siehe www.duenenvilla.de/AGB\n";
+  return t;
+}
+
+// === UI ===
+var activeTab=UNITS[0].id;
+
+function buildDash(){
+  var totalBk=0,totalOpen=0,totalAnz=0,totalPaid=0,upcoming=0;
+  UNITS.forEach(function(u){
+    DATA[u.id].bookings.forEach(function(b){
+      totalBk++;
+      var cost={total:b.total||0};
+      var paid=(b.anzahlung&&b.anzahlung.paid?b.anzahlung.amount:0)+(b.restzahlung&&b.restzahlung.paid?b.restzahlung.amount:0);
+      if(paid>=cost.total)totalPaid++;
+      else if(paid>0)totalAnz++;
+      else totalOpen++;
+      if(pd(b.von)>=TODAY)upcoming++;
+    });
+  });
+  document.getElementById("dash").innerHTML=
+    '<div class="dash-card"><div class="num">'+totalBk+'</div><div class="lbl">Buchungen</div></div>'+
+    '<div class="dash-card"><div class="num">'+upcoming+'</div><div class="lbl">Anstehend</div></div>'+
+    '<div class="dash-card"><div class="num" style="color:#e74c3c">'+totalOpen+'</div><div class="lbl">Offen</div></div>'+
+    '<div class="dash-card"><div class="num" style="color:#e67e22">'+totalAnz+'</div><div class="lbl">Anzahlung</div></div>'+
+    '<div class="dash-card"><div class="num" style="color:#28a745">'+totalPaid+'</div><div class="lbl">Bezahlt</div></div>';
+}
+
+function buildTabs(){
+  var h="";UNITS.forEach(function(u){
+    var cnt=DATA[u.id].bookings.length;
+    h+='<div class="tab'+(u.id===activeTab?' active':'')+'" onclick="switchTab(\''+u.id+'\')">'+u.short+'<span class="tc">'+cnt+'</span></div>';
+  });
+  document.getElementById("tabs").innerHTML=h;
+}
+function switchTab(uid){activeTab=uid;buildTabs();UNITS.forEach(function(u){var p=document.getElementById("tp_"+u.id);if(p)p.className="tp"+(u.id===uid?" active":"");});}
+
+function buildPanels(){
+  var h="";UNITS.forEach(function(u){
+    h+='<div class="tp'+(u.id===activeTab?' active':'')+'" id="tp_'+u.id+'">';
+    // Prices
+    h+='<div class="card"><div class="ch hg"><h2>'+u.name+' Preise</h2></div><div class="cb"><div class="sg">';
+    h+='<div class="sc s-off"><h4><span class="dot"></span>Off</h4><div class="sr">EUR: <input type="number" id="p_'+u.id+'_off" value="'+DATA[u.id].prices.off+'" min="30" max="500" onchange="chgP(\''+u.id+'\')"></div></div>';
+    h+='<div class="sc s-neb"><h4><span class="dot"></span>Neben</h4><div class="sr">EUR: <input type="number" id="p_'+u.id+'_neb" value="'+DATA[u.id].prices.neb+'" min="30" max="500" onchange="chgP(\''+u.id+'\')"></div></div>';
+    h+='<div class="sc s-hau"><h4><span class="dot"></span>Haupt</h4><div class="sr">EUR: <input type="number" id="p_'+u.id+'_hau" value="'+DATA[u.id].prices.hau+'" min="30" max="500" onchange="chgP(\''+u.id+'\')"></div></div>';
+    h+='<div class="sc"><h4>Extras</h4><div class="sr">Hund: '+u.dog+' EUR/N</div><div class="sr">Waesche: '+u.laundry+' EUR/P</div><div class="sr">Reinigung: '+u.clean+' EUR</div><div class="sr">Zusatzperson: '+u.extra+' EUR/N (ab 3. Pers.)</div></div>';
+    h+='</div></div></div>';
+    // Booking form
+    h+='<div class="card"><div class="ch hb"><h2>'+u.short+' Buchung</h2></div><div class="cb"><div class="fg">';
+    h+='<div class="fi"><label>Anreise</label><input type="date" id="ba_'+u.id+'" max="2027-12-31"></div>';
+    h+='<div class="fi"><label>Abreise</label><input type="date" id="bb_'+u.id+'" max="2027-12-31"></div>';
+    h+='<div class="fi"><label>Gast</label><input type="text" id="bg_'+u.id+'" placeholder="Name"></div>';
+    h+='<div class="fi"><label>E-Mail</label><input type="email" id="be_'+u.id+'" placeholder="gast@mail.de"></div>';
+    h+='<div class="fi"><label>Strasse Nr</label><input type="text" id="bstr_'+u.id+'" placeholder="Musterstr. 1"></div>';
+    h+='<div class="fi"><label>PLZ Ort</label><input type="text" id="bplz_'+u.id+'" placeholder="12345 Berlin"></div>';
+    h+='<div class="fi"><label>Tel/WA</label><input type="tel" id="bt_'+u.id+'" placeholder="+49..." style="min-width:120px"></div>';
+    h+='<div class="fi"><label>Pers.</label><input type="number" id="bp_'+u.id+'" value="2" min="1" max="'+u.pers+'" onchange="syncKurErw(\''+u.id+'\')"></div>';
+    h+='<div class="fi"><label>Hunde</label><input type="number" id="bh_'+u.id+'" value="0" min="0" max="3"></div>';
+    h+='<div class="fi"><label>Kurtaxe Erw.</label><input type="number" id="bke_'+u.id+'" value="2" min="0"></div>';
+    h+='<div class="fi"><label>Kurtaxe Kind 7-14</label><input type="number" id="bkk_'+u.id+'" value="0" min="0"></div>';
+    h+='<div class="fi"><label>Schwerbeh.80%+</label><input type="number" id="bkb_'+u.id+'" value="0" min="0"></div>';
+    h+='<div class="fi"><label>Waeschepaket</label><select id="bw_'+u.id+'"><option value="0">Ohne</option><option value="1">Ja</option></select></div>';
+    h+='<div class="fi"><label>Quelle</label><select id="bq_'+u.id+'"><option value="">Direkt</option><option value="hundeurlaub">hundeurlaub.de</option><option value="ostsee-reisen">ostsee-reisen.de</option><option value="andere">Andere</option></select></div>';
+    h+='<div class="fi"><label>Status</label><select id="bs_'+u.id+'"><option value="belegt">Belegt</option><option value="anfrage">Anfrage</option></select></div>';
+    h+='<button class="btn btn-add" onclick="addB(\''+u.id+'\')">Eintragen</button>';
+    h+='</div>';
+    h+='<div class="note">Klick auf belegte Tage = Details/Loeschen</div>';
+    h+='</div></div>';
+    // Booking table
+    h+='<div class="card"><div class="ch ho"><h2>'+u.short+' Buchungen + Zahlungen</h2><div class="stats" id="ps_'+u.id+'"></div></div><div class="cb"><div class="bt" id="bl_'+u.id+'"></div></div></div>';
+    // Calendar
+    h+='<div class="card"><div class="ch hl"><h2>'+u.name+'</h2><div class="stats" id="st_'+u.id+'"></div></div><div class="pb2" id="cal_'+u.id+'"></div></div>';
+    h+='</div>';
+  });
+  document.getElementById("panels").innerHTML=h;
+}
+
+function chgP(uid){DATA[uid].prices.off=parseInt(document.getElementById("p_"+uid+"_off").value)||0;DATA[uid].prices.neb=parseInt(document.getElementById("p_"+uid+"_neb").value)||0;DATA[uid].prices.hau=parseInt(document.getElementById("p_"+uid+"_hau").value)||0;saveAll(true);renderCal(uid);}
+function syncKurErw(uid){var p=parseInt(document.getElementById("bp_"+uid).value)||0;document.getElementById("bke_"+uid).value=p;}
+
+function addB(uid){
+  var von=document.getElementById("ba_"+uid).value,bis=document.getElementById("bb_"+uid).value;
+  var gast=document.getElementById("bg_"+uid).value.trim();
+  var email=document.getElementById("be_"+uid).value.trim();
+  var phone=document.getElementById("bt_"+uid).value.trim().replace(/[^0-9+]/g,"");
+  var pers=parseInt(document.getElementById("bp_"+uid).value)||2;
+  var hunde=parseInt(document.getElementById("bh_"+uid).value)||0;
+  var kurErw=parseInt(document.getElementById("bke_"+uid).value);if(isNaN(kurErw))kurErw=pers;
+  var kurKind=parseInt(document.getElementById("bkk_"+uid).value)||0;
+  var kurBeh=parseInt(document.getElementById("bkb_"+uid).value)||0;
+  var waesche=document.getElementById("bw_"+uid).value==="1";
+  var source=document.getElementById("bq_"+uid).value;
+  var status=document.getElementById("bs_"+uid).value;
+  if(!von||!bis||!gast){alert("Bitte Anreise, Abreise und Gastname eingeben.");return;}
+  if(von>=bis){alert("Abreise muss nach Anreise liegen.");return;}
+  var strasse=document.getElementById("bstr_"+uid).value.trim();
+  var plzort=document.getElementById("bplz_"+uid).value.trim();
+  var entry={von:von,bis:bis,gast:gast,email:email,phone:phone,strasse:strasse,plzort:plzort,pers:pers,hunde:hunde,kurErw:kurErw,kurKind:kurKind,kurBeh:kurBeh,waesche:waesche,source:source,anfrage:status==="anfrage",_id:DATA[uid].nextId++,confirmed:false,buchDatum:dk(TODAY),anzahlung:{amount:0,date:"",paid:false},restzahlung:{amount:0,date:"",paid:false},notes:""};
+  var cost=calcBookingCost(uid,entry);
+  entry.total=cost.total;
+  entry.accom=cost.accom;
+  entry.seasonBreakdown=cost.seasonBreakdown;
+  entry.extraRate=cost.extraRate;
+  entry.extraFee=cost.extraFee;
+  entry.dogFee=cost.dogFee;
+  entry.waescheFee=cost.waescheFee;
+  entry.cleanFee=cost.cleaning;
+  entry.kurFee=cost.kurFee;
+  entry.kurDays=cost.kurDays;
+  entry.kurHsN=cost.kurHsN;
+  entry.kurNsN=cost.kurNsN;
+  // Restzahlung = glatter 10er-Betrag (abgerundet), Anzahlung traegt den kompletten Cent-Betrag
+  var restAmt=Math.floor((cost.total/2)/10)*10;
+  entry.restzahlung.amount=restAmt;
+  entry.anzahlung.amount=Math.round((cost.total-restAmt)*100)/100;
+  var ovs=findOv(uid,von,bis);
+  if(ovs.length>0){if(!confirm("Belegt: "+ovs.map(function(b){return b.gast;}).join(", ")+"\nUeberschreiben?")){return;}var ids={};ovs.forEach(function(b){ids[b._id]=1;});DATA[uid].bookings=DATA[uid].bookings.filter(function(b){return!ids[b._id];});saveAll();}
+  DATA[uid].bookings.push(entry);
+  saveAll(true);
+  document.getElementById("bg_"+uid).value="";document.getElementById("be_"+uid).value="";document.getElementById("bt_"+uid).value="";
+  renderAll();
+}
+
+function delB(uid,id){
+  var b=DATA[uid].bookings.find(function(x){return x._id===id;});
+  if(!b)return;if(!confirm("Loeschen: "+b.gast+" ("+fmt(b.von)+" - "+fmt(b.bis)+")?"))return;
+  DATA[uid].bookings=DATA[uid].bookings.filter(function(x){return x._id!==id;});saveAll(true);renderAll();
+}
+
+// Show booking detail modal
+function showDetail(uid,id){
+  var b=DATA[uid].bookings.find(function(x){return x._id===id;});if(!b)return;
+  var u=UNITS.find(function(x){return x.id===uid;});
+  var cost=getStoredCost(uid,b);
+  var inv=b.invoiceNr||genInvNr(uid,b.von);
+  var payStatus="OFFEN";
+  if(b.anzahlung.paid&&b.restzahlung.paid)payStatus="BEZAHLT";
+  else if(b.anzahlung.paid)payStatus="ANZAHLUNG OK";
+  var h='<div class="mo" onclick="if(event.target===this)closeM()"><div class="md">';
+  h+='<h3>'+u.name+' - '+b.gast+'</h3>';
+  if(b.reviewFlag)h+='<div style="background:#e74c3c;color:#fff;padding:8px;border-radius:6px;margin-bottom:8px;font-weight:bold">&#9888; ACHTUNG BEARBEITEN - automatisch aus Gmail erkannt, bitte pruefen!'+(b.hinweis?'<br><span style="font-weight:normal">'+b.hinweis+'</span>':'')+'</div>';
+  h+='<div class="det"><strong>'+inv+'</strong> | '+fmt(b.von)+' - '+fmt(b.bis)+' ('+cost.nights+' N)<br>';
+  h+='Personen: '+(b.pers||1);if(b.hunde)h+=' | Hunde: '+b.hunde;
+  if(b.kurErw!=null||b.kurKind||b.kurBeh)h+='<br>Kurtaxe-Personen: '+(b.kurErw!=null?b.kurErw:(b.pers||0))+' Erw.'+(b.kurKind?' / '+b.kurKind+' Kind 7-14':'')+(b.kurBeh?' / '+b.kurBeh+' Schwerbeh.':'');
+  if(b.email)h+='<br>E-Mail: '+b.email;
+  if(b.phone)h+='<br>Tel: '+b.phone;
+  if(b.strasse)h+='<br>'+b.strasse;
+  if(b.plzort)h+='<br>'+b.plzort;
+  if(b.phone)h+='<br>Tel/WA: '+b.phone;
+  if(b.buchDatum)h+='<br>Gebucht am: '+fmt(b.buchDatum);
+  if(b.source)h+='<br>Quelle: '+b.source;
+  h+='<br><br><strong>Kosten:</strong> '+eur(cost.total)+' EUR';
+  if(b.priceNote)h+='<br><em>'+b.priceNote+'</em>';
+  h+='<br>Unterkunft: '+eur(cost.accom)+' EUR';
+  if(cost.extraFee)h+='<br>Zusatzpersonen: '+eur(cost.extraFee)+' EUR';
+  if(cost.dogFee)h+='<br>Hunde: '+eur(cost.dogFee)+' EUR';
+  if(cost.waescheFee)h+='<br>Waesche: '+eur(cost.waescheFee)+' EUR';
+  h+='<br>Reinigung: '+eur(cost.cleaning)+' EUR';
+  if(cost.kurFee)h+='<br>Kurabgabe ('+cost.kurDays+' Tage): '+eur(cost.kurFee)+' EUR';
+  var dummy123=0;
+  h+='<br><strong>Zahlung:</strong> '+payStatus;
+  h+='<br>Anzahlung: '+b.anzahlung.amount+' EUR '+(b.anzahlung.paid?'BEZAHLT '+b.anzahlung.date:'OFFEN');
+  h+='<br>Rest: '+b.restzahlung.amount+' EUR '+(b.restzahlung.paid?'BEZAHLT '+b.restzahlung.date:'OFFEN');
+  h+='</div>';
+  // Status + Payment buttons
+  h+='<div style="margin-bottom:10px">';
+  if(b.anfrage)h+='<button class="btn btn-add btn-sm" onclick="confirmB(\''+uid+'\','+id+')">Anfrage bestaetigen</button> ';
+  if(!b.anzahlung.paid)h+='<button class="btn btn-save btn-sm" onclick="markPaid(\''+uid+'\','+id+',\'anz\')">Anzahlung erhalten</button> ';
+  if(!b.restzahlung.paid)h+='<button class="btn btn-save btn-sm" onclick="markPaid(\''+uid+'\','+id+',\'rest\')">Restzahlung erhalten</button> ';
+  h+='</div>';
+  // Action buttons
+  h+='<div class="mbtns">';
+  h+='<button class="mb mb-ok" onclick="editB(\''+uid+'\','+id+')">Aendern</button>';
+  h+='<button class="mb mb-wa" onclick="sendAnreise(\''+uid+'\','+id+')">Anreise-Info</button>';
+  h+='<button class="mb mb-wa" onclick="sendMsg(\''+uid+'\','+id+',\'angebot\',\'wa\')">Angebot WA</button>';
+  h+='<button class="mb mb-mail" onclick="sendMsg(\''+uid+'\','+id+',\'angebot\',\'mail\')">Angebot Mail</button>';
+  h+='<button class="mb mb-wa" onclick="sendMsg(\''+uid+'\','+id+',\'bestaetigung\',\'wa\')">Bestaetigung WA</button>';
+  h+='<button class="mb mb-mail" onclick="sendMsg(\''+uid+'\','+id+',\'bestaetigung\',\'mail\')">Bestaetigung Mail</button>';
+  h+='<button class="mb mb-inv" onclick="showInvoice(\''+uid+'\','+id+')">Rechnung</button>';
+  h+='<button class="mb mb-d" onclick="closeM();delB(\''+uid+'\','+id+')">Loeschen</button>';
+  h+='<button class="mb mb-c" onclick="closeM()">Schliessen</button>';
+  h+='</div></div></div>';
+  document.getElementById("modal").innerHTML=h;
+}
+
+function editB(uid,id){
+  var b=DATA[uid].bookings.find(function(x){return x._id===id;});if(!b)return;
+  var u=UNITS.find(function(x){return x.id===uid;});
+  closeM();
+  var h='<div class="mo" onclick="if(event.target===this)closeM()"><div class="md"><h3>'+u.short+' - '+b.gast+' bearbeiten</h3>';
+  h+='<div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><style>.md input[type=number],.md input[type=text],.md input[type=email],.md input[type=date]{width:100%!important;min-width:0!important}</style>';
+  h+='<div class="fi"><label>Gast</label><input type="text" id="ed_gast" value="'+b.gast+'"></div>';
+  h+='<div class="fi"><label>E-Mail</label><input type="email" id="ed_email" value="'+(b.email||'')+'"></div>';
+  h+='<div class="fi"><label>Telefon</label><input type="text" id="ed_phone" value="'+(b.phone||'')+'"></div>';
+  h+='<div class="fi"><label>Strasse Nr</label><input type="text" id="ed_str" value="'+(b.strasse||'')+'"></div>';
+  h+='<div class="fi"><label>PLZ Ort</label><input type="text" id="ed_plz" value="'+(b.plzort||'')+'"></div>';
+  h+='<div class="fi"><label>Personen</label><input type="number" id="ed_pers" value="'+(b.pers||2)+'" min="1" max="8"></div>';
+  h+='<div class="fi"><label>Hunde</label><input type="number" id="ed_hunde" value="'+(b.hunde||0)+'" min="0" max="3"></div>';
+  h+='<div class="fi"><label>Kurtaxe Erw.</label><input type="number" id="ed_kurerw" value="'+(b.kurErw!=null?b.kurErw:(b.pers||0))+'" min="0"></div>';
+  h+='<div class="fi"><label>Kurtaxe Kind 7-14</label><input type="number" id="ed_kurkind" value="'+(b.kurKind||0)+'" min="0"></div>';
+  h+='<div class="fi"><label>Schwerbeh.80%+</label><input type="number" id="ed_kurbeh" value="'+(b.kurBeh||0)+'" min="0"></div>';
+  h+='<div class="fi"><label>Waeschepaket</label><select id="ed_waesche_ja"><option value="0"'+(!b.waesche?' selected':'')+'>Ohne</option><option value="1"'+(b.waesche?' selected':'')+'>Ja</option></select></div>';
+  h+='<div class="fi"><label>Anreise</label><input type="date" id="ed_von" value="'+b.von+'"></div>';
+  h+='<div class="fi"><label>Abreise</label><input type="date" id="ed_bis" value="'+b.bis+'"></div>';
+  h+='<div class="fi"><label>Gesamtpreis EUR <button type="button" onclick="calcEditTotal()" style="font-size:.6rem;padding:1px 6px;background:var(--ac);color:#fff;border:none;border-radius:3px;cursor:pointer">= Summe</button></label><input type="number" step="0.01" id="ed_total" value="'+(b.total||0)+'" min="0"></div>';
+  h+='<div class="fi"><label>Anzahlung EUR</label><input type="number" step="0.01" id="ed_anz" value="'+(b.anzahlung.amount||0)+'" min="0"></div>';
+  h+='<div class="fi"><label>Restbetrag EUR</label><input type="number" step="0.01" id="ed_rest" value="'+(b.restzahlung.amount||0)+'" min="0"></div>';
+  h+='<div class="fi"><label>Unterkunft EUR</label><input type="number" id="ed_accom" value="'+(b.accom||0)+'" min="0"></div>';
+  h+='<div class="fi"><label>Zusatzpersonen EUR</label><input type="number" id="ed_extra" value="'+(b.extraFee||0)+'" min="0"></div>';
+  h+='<div class="fi"><label>Hunde EUR</label><input type="number" id="ed_dog" value="'+(b.dogFee||0)+'" min="0"></div>';
+  h+='<div class="fi"><label>Waesche EUR</label><input type="number" id="ed_waesche" value="'+(b.waescheFee||0)+'" min="0"></div>';
+  h+='<div class="fi"><label>Reinigung EUR</label><input type="number" id="ed_clean" value="'+(b.cleanFee||0)+'" min="0"></div>';
+  h+='<div class="fi"><label>Kurabgabe EUR</label><input type="number" step="0.01" id="ed_kurfee" value="'+(b.kurFee||0)+'" min="0"></div>';
+  h+='<div class="fi"><label>Buchungs-Nr</label><input type="text" id="ed_inv" value="'+(b.invoiceNr||'')+'"></div>';
+  h+='<div class="fi"><label>Preisnotiz</label><input type="text" id="ed_pnote" value="'+(b.priceNote||'')+'"></div>';
+  h+='<div class="fi"><label>Quelle</label><input type="text" id="ed_src" value="'+(b.source||'')+'"></div>';
+  h+='</div>';
+  h+='<div class="mbtns" style="margin-top:12px"><button class="mb mb-c" onclick="calcEditTotal()" style="background:#f39c12;color:#fff">Summe berechnen</button> <button class="mb mb-ok" onclick="saveEdit(\''+uid+'\','+id+')">Speichern</button>';
+  h+='<button class="mb mb-c" onclick="closeM()">Abbrechen</button></div>';
+  h+='</div></div>';
+  document.getElementById("modal").innerHTML=h;
+}
+
+function calcEditTotal(){
+  var a=parseFloat(document.getElementById("ed_accom").value)||0;
+  var x=parseFloat(document.getElementById("ed_extra").value)||0;
+  var d=parseFloat(document.getElementById("ed_dog").value)||0;
+  var w=parseFloat(document.getElementById("ed_waesche").value)||0;
+  var r=parseFloat(document.getElementById("ed_clean").value)||0;
+  var k=parseFloat(document.getElementById("ed_kurfee").value)||0;
+  var total=Math.round((a+x+d+w+r+k)*100)/100;
+  if(confirm("Gesamtpreis auf "+total+" EUR setzen?\nAnzahlung/Rest werden NICHT geaendert."))
+    document.getElementById("ed_total").value=total;
+}
+
+function saveEdit(uid,id){
+  var b=DATA[uid].bookings.find(function(x){return x._id===id;});if(!b)return;
+  b.gast=document.getElementById("ed_gast").value.trim();
+  b.email=document.getElementById("ed_email").value.trim();
+  b.phone=document.getElementById("ed_phone").value.trim();
+  b.strasse=document.getElementById("ed_str").value.trim();
+  b.plzort=document.getElementById("ed_plz").value.trim();
+  b.pers=parseInt(document.getElementById("ed_pers").value)||2;
+  b.hunde=parseInt(document.getElementById("ed_hunde").value)||0;
+  b.kurErw=parseInt(document.getElementById("ed_kurerw").value)||0;
+  b.kurKind=parseInt(document.getElementById("ed_kurkind").value)||0;
+  b.kurBeh=parseInt(document.getElementById("ed_kurbeh").value)||0;
+  b.waesche=document.getElementById("ed_waesche_ja").value==="1";
+  b.von=document.getElementById("ed_von").value;
+  b.bis=document.getElementById("ed_bis").value;
+  // Gespeichert wird EXAKT was eingegeben wurde - KEINE Neuberechnung
+  b.total=parseFloat(document.getElementById("ed_total").value)||0;
+  b.anzahlung.amount=parseFloat(document.getElementById("ed_anz").value)||0;
+  b.restzahlung.amount=parseFloat(document.getElementById("ed_rest").value)||0;
+  b.accom=parseInt(document.getElementById("ed_accom").value)||0;
+  b.extraFee=parseFloat(document.getElementById("ed_extra").value)||0;
+  b.dogFee=parseInt(document.getElementById("ed_dog").value)||0;
+  b.waescheFee=parseInt(document.getElementById("ed_waesche").value)||0;
+  b.cleanFee=parseInt(document.getElementById("ed_clean").value)||0;
+  b.kurFee=parseFloat(document.getElementById("ed_kurfee").value)||0;
+  b.invoiceNr=document.getElementById("ed_inv").value.trim();
+  b.priceNote=document.getElementById("ed_pnote").value.trim();
+  b.source=document.getElementById("ed_src").value.trim();
+  b.reviewFlag=false; // einmal manuell geprueft/gespeichert = Markierung entfaellt
+  saveAll(true);
+  closeM();renderAll();
+}
+
+function confirmB(uid,id){
+  var b=DATA[uid].bookings.find(function(x){return x._id===id;});if(!b)return;
+  b.anfrage=false;b.confirmed=true;
+  saveAll(true);
+  closeM();renderAll();showDetail(uid,id);
+}
+
+function markPaid(uid,id,type){
+  var b=DATA[uid].bookings.find(function(x){return x._id===id;});if(!b)return;
+  var today=dk(TODAY);
+  if(type==="anz"){b.anzahlung.paid=true;b.anzahlung.date=today;b.confirmed=true;b.anfrage=false;}
+  else{b.restzahlung.paid=true;b.restzahlung.date=today;}
+  closeM();renderAll();showDetail(uid,id);
+}
+
+function sendMsg(uid,id,type,channel){
+  var b=DATA[uid].bookings.find(function(x){return x._id===id;});if(!b)return;
+  var u=UNITS.find(function(x){return x.id===uid;});
+  var cost=getStoredCost(uid,b);
+  var txt="";
+  if(type==="angebot")txt=tplAngebot(uid,b,cost);
+  else txt=tplBestaetigung(uid,b,cost);
+  var inv=genInvNr(uid,b.von);
+  if(channel==="wa"){
+    var waNum=b.phone||ADMINWA;
+    window.open("https://wa.me/"+waNum+"?text="+encodeURIComponent(txt),"_blank");
+  }else{
+    var to=b.email||MAIL;
+    var subj=type==="angebot"?"Angebot "+u.name+" "+inv:"Buchungsbestaetigung "+u.name+" "+inv;
+    window.open("mailto:"+to+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(txt),"_blank");
+  }
+}
+
+function showInvoice(uid,id){
+  var b=DATA[uid].bookings.find(function(x){return x._id===id;});if(!b)return;
+  var cost=getStoredCost(uid,b);
+  var txt=tplRechnung(uid,b,cost);
+  closeM();
+  var h='<div class="mo" onclick="if(event.target===this)closeM()"><div class="md"><h3>Rechnung</h3>';
+  h+='<pre>'+txt+'</pre>';
+  h+='<div class="mbtns">';
+  h+='<button class="mb mb-ok" onclick="copyTxt()">Kopieren</button>';
+  h+='<button class="mb mb-wa" onclick="sendInvWA(\''+uid+'\','+id+')">Rechnung WA</button>';
+  h+='<button class="mb mb-mail" onclick="sendInvMail(\''+uid+'\','+id+')">Rechnung Mail</button>';
+  h+='<button class="mb mb-c" onclick="closeM()">Schliessen</button>';
+  h+='</div></div></div>';
+  document.getElementById("modal").innerHTML=h;
+  window._invTxt=txt;
+}
+function copyTxt(){if(window._invTxt){navigator.clipboard.writeText(window._invTxt).then(function(){alert("Kopiert!");});}}
+function sendInvWA(uid,id){
+  var b=DATA[uid].bookings.find(function(x){return x._id===id;});if(!b)return;
+  var cost=getStoredCost(uid,b);
+  var txt=tplRechnung(uid,b,cost);
+  window.open("https://wa.me/"+ADMINWA+"?text="+encodeURIComponent(txt),"_blank");
+}
+function sendInvMail(uid,id){
+  var b=DATA[uid].bookings.find(function(x){return x._id===id;});if(!b)return;
+  var u=UNITS.find(function(x){return x.id===uid;});
+  var cost=getStoredCost(uid,b);
+  var txt=tplRechnung(uid,b,cost);
+  var inv=genInvNr(uid,b.von);
+  var to=b.email||MAIL;
+  window.open("mailto:"+to+"?subject="+encodeURIComponent("Rechnung "+u.name+" "+inv)+"&body="+encodeURIComponent(txt),"_blank");
+}
+
+function closeM(){document.getElementById("modal").innerHTML="";}
+
+function renderList(uid){
+  var el=document.getElementById("bl_"+uid);
+  var bks=DATA[uid].bookings.slice().sort(function(a,b){return a.von<b.von?-1:1;});
+  if(!bks.length){el.innerHTML='<div class="note">Keine Buchungen</div>';return;}
+  var h='<table><tr><th>Nr</th><th>Gebucht</th><th>Anreise</th><th>Abreise</th><th>Gast</th><th>P</th><th>H</th><th>Total</th><th>Kur</th><th>Status</th><th>Anz.</th><th>Anz.Dat</th><th>Rest</th><th>Rest.Dat</th><th>Quelle</th><th></th></tr>';
+  var openAmt=0;
+  bks.forEach(function(b){
+    var cost={total:b.total||0,nights:Math.round((pd(b.bis)-pd(b.von))/864e5),accom:b.accom||0,cleaning:b.cleanFee||0,dogFee:b.dogFee||0,waescheFee:b.waescheFee||0,laundry:0,kurFee:b.kurFee||0};
+    var inv=b.invoiceNr||genInvNr(uid,b.von);
+    var pcls="",pbadge="";
+    if(b.reviewFlag){pcls="pay-open";pbadge='<span class="pay-badge pb-open" style="background:#e74c3c">&#9888; Achtung bearbeiten</span>';}
+    else if(b.anzahlung.paid&&b.restzahlung.paid){pcls="pay-full";pbadge='<span class="pay-badge pb-paid">Bezahlt</span>';}
+    else if(b.anzahlung.paid){pcls="pay-part";pbadge='<span class="pay-badge pb-anz">Anzahlung</span>';openAmt+=b.restzahlung.amount;}
+    else{pcls="pay-open";pbadge='<span class="pay-badge pb-open">Offen</span>';openAmt+=cost.total;}
+    h+='<tr class="'+pcls+'" onclick="showDetail(\''+uid+'\','+b._id+')" style="cursor:pointer'+(b.reviewFlag?';background:#fde2e2':'')+'">';
+    h+='<td>'+inv+'</td><td>'+(b.buchDatum?fmt(b.buchDatum):'-')+'</td><td>'+fmt(b.von)+'</td><td>'+fmt(b.bis)+'</td>';
+    h+='<td><strong>'+(b.reviewFlag?'&#9888; ':'')+b.gast+'</strong></td><td>'+(b.pers||1)+'</td><td>'+(b.hunde||0)+'</td>';
+    h+='<td><strong>'+cost.total+'</strong></td>';
+    h+='<td>'+(cost.kurFee?cost.kurFee.toFixed(2):'-')+'</td>';
+    var stBadge=b.anfrage?'<span class="pay-badge pb-open">Anfrage</span>':'<span class="pay-badge pb-paid">Gebucht</span>';
+    h+='<td>'+stBadge+'</td>';
+    h+='<td>'+b.anzahlung.amount+(b.anzahlung.paid?' OK':'')+'</td>';
+    h+='<td>'+(b.anzahlung.date?fmt(b.anzahlung.date):'-')+'</td>';
+    h+='<td>'+b.restzahlung.amount+(b.restzahlung.paid?' OK':'')+'</td>';
+    h+='<td>'+(b.restzahlung.date?fmt(b.restzahlung.date):'-')+'</td>';
+    h+='<td>'+(b.source||'-')+'</td>';
+    h+='<td><button class="del" onclick="event.stopPropagation();delB(\''+uid+'\','+b._id+')">X</button></td></tr>';
+  });
+  h+='</table>';
+  el.innerHTML=h;
+  document.getElementById("ps_"+uid).innerHTML='<span style="color:#fff">Offen: '+openAmt+' EUR</span>';
+}
+
+function renderCal(uid){
+  var u=UNITS.find(function(x){return x.id===uid;});
+  var el=document.getElementById("cal_"+uid),h="";
+  var CM=TODAY.getMonth(),CY=TODAY.getFullYear(),freeDays=0;
+  for(var mi=0;mi<12;mi++){
+    var m=(CM+mi)%12,yr=CY+Math.floor((CM+mi)/12);
+    h+='<div class="ml">'+MI[m]+' '+yr+'</div><div class="wr">';
+    for(var i=0;i<7;i++)h+='<div class="wc '+WCC[i]+'">'+WL[i]+'</div>';
+    h+='</div><div class="dg">';
+    var fd=new Date(yr,m,1).getDay(),off=fd===0?6:fd-1;
+    for(var x=0;x<off;x++)h+='<div class="dc em"></div>';
+    var dim=new Date(yr,m+1,0).getDate();
+    for(var day=1;day<=dim;day++){
+      var date=new Date(yr,m,day),info=getInfo(uid,date),price=getPrice(uid,date);
+      var dow=date.getDay(),key=dk(date),ft=FT[key]||null;
+      var cls="dc";if(dow===6)cls+=" dsa";if(dow===0)cls+=" dso";if(ft)cls+=" dft";
+      var wech=isWechsel(uid,date);
+      if(wech.w){
+        cls+=" xwech";
+        var abT=wech.abAnf?"anf":"bk";
+        var anT=wech.anAnf?"anf":"bk";
+        cls+=" xwech-"+abT+"-"+anT;
+      }
+      var dn=DN[dow],tt=day+". "+MI[m]+" ("+dn+")";if(ft)tt+=" - "+ft;
+      var ht=ft?'<span class="hd">'+ft+'</span>':"";
+      var c="",onclick="";
+      if(info.b){onclick=' onclick="showDetail(\''+uid+'\','+info.b._id+')"';}
+      if(info.s==="xfr"){cls+=" xfr";tt+=" - "+price+" EUR";c='<span class="dn">'+day+'.</span><span class="pr">'+price+'<span class="eu">EUR</span></span>'+ht;freeDays++;}
+      else if(info.s==="xar"||info.s==="xara"){cls+=" "+info.s;tt+=" - AN: "+info.g;c='<span class="dn">'+day+'.</span><span class="gn">'+info.g+'</span>'+ht;}
+      else if(info.s==="xab"||info.s==="xaba"){cls+=" "+info.s;
+        if(wech.w){tt+=" - AB:"+wech.abGast+" AN:"+wech.anGast;c='<span class="dn">'+day+'.</span><span class="gn" style="font-size:.38rem">'+wech.abGast.split(" ").pop()+"/"+wech.anGast.split(" ").pop()+'</span>'+ht;}
+        else{tt+=" - AB: "+info.g;c='<span class="dn">'+day+'.</span><span class="gn">'+info.g+'</span>'+ht;}freeDays++;}
+      else if(info.s==="xanf"){cls+=" xanf";tt+=" - ANFR: "+info.g;c='<span class="dn">'+day+'.</span><span class="gn">?'+info.g+'</span>'+ht;}
+      else{cls+=" xbk";tt+=" - "+info.g;c='<span class="dn">'+day+'.</span><span class="gn">'+info.g+'</span>'+ht;}
+      h+='<div class="'+cls+'" data-tooltip="'+tt+'"'+onclick+'>'+c+'</div>';
+    }
+    h+='</div>';
+  }
+  el.innerHTML=h;
+  document.getElementById("st_"+uid).innerHTML='<strong>'+freeDays+'</strong> Tage frei';
+}
+
+// Save/Load
+function saveAll(silent){try{var d={};UNITS.forEach(function(u){d[u.id]=DATA[u.id];});localStorage.setItem(SKEY,JSON.stringify(d));if(!silent)showSt("Gespeichert");}catch(e){alert(e.message);}}
+function loadAll(){try{var r=localStorage.getItem(SKEY);if(!r)return false;var d=JSON.parse(r);UNITS.forEach(function(u){if(d[u.id]){DATA[u.id]=d[u.id];if(!DATA[u.id].nextId)DATA[u.id].nextId=1;DATA[u.id].bookings.forEach(function(b){if(b._id>=DATA[u.id].nextId)DATA[u.id].nextId=b._id+1;if(!b.buchDatum)b.buchDatum="";if(!b.anzahlung)b.anzahlung={amount:0,date:"",paid:false};if(!b.restzahlung)b.restzahlung={amount:0,date:"",paid:false};if(b.kurErw==null)b.kurErw=b.pers||0;if(b.kurKind==null)b.kurKind=0;if(b.kurBeh==null)b.kurBeh=0;if(b.kurFee==null)b.kurFee=0;if(b.extraFee==null)b.extraFee=0;if(b.waesche==null)b.waesche=false;});}});return true;}catch(e){return false;}}
+function exportAll(){var d={name:"Duenenvilla Komplett",units:{}};UNITS.forEach(function(u){d.units[u.id]=DATA[u.id];});d.exported=new Date().toISOString();var blob=new Blob([JSON.stringify(d,null,2)],{type:"application/json"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="duenenvilla_komplett.json";a.click();showSt("Exportiert");}
+function importAll(inp){var f=inp.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(e){try{var d=JSON.parse(e.target.result);if(d.units){UNITS.forEach(function(u){if(d.units[u.id]){DATA[u.id]=d.units[u.id];DATA[u.id].bookings.forEach(function(b){if(b._id>=DATA[u.id].nextId)DATA[u.id].nextId=b._id+1;if(!b.buchDatum)b.buchDatum="";if(!b.anzahlung)b.anzahlung={amount:0,date:"",paid:false};if(!b.restzahlung)b.restzahlung={amount:0,date:"",paid:false};if(b.kurErw==null)b.kurErw=b.pers||0;if(b.kurKind==null)b.kurKind=0;if(b.kurBeh==null)b.kurBeh=0;if(b.kurFee==null)b.kurFee=0;if(b.extraFee==null)b.extraFee=0;if(b.waesche==null)b.waesche=false;});}});saveAll(true);renderAll();showSt("Importiert");}}catch(err){alert(err.message);}};rd.readAsText(f);inp.value="";}
+function showSt(msg){var el=document.getElementById("sMsg");if(el){el.textContent=msg;el.classList.add("vis");setTimeout(function(){el.classList.remove("vis");},3000);}}
+
+function renderRP(){
+  var all=[];
+  UNITS.forEach(function(u){
+    DATA[u.id].bookings.forEach(function(b){
+      if(b.anfrage)return; // nur bestaetigte
+      var abDate=pd(b.bis);
+      if(abDate<TODAY)return;
+      var twoMo=new Date(TODAY);twoMo.setMonth(twoMo.getMonth()+2);if(abDate>twoMo)return;
+      // Find next booking for same unit
+      var next=null;
+      DATA[u.id].bookings.forEach(function(nb){
+        if(nb._id===b._id||nb.anfrage)return;
+        var nVon=pd(nb.von);
+        if(nVon>=abDate){
+          if(!next||nVon<pd(next.von))next=nb;
+        }
+      });
+      var wechsel=false,tageZeit="";
+      if(next&&sd(abDate,pd(next.von))){wechsel=true;tageZeit="WECHSEL (gleicher Tag!)";}
+      else if(next){
+        var diff=Math.round((pd(next.von)-abDate)/864e5);
+        tageZeit=diff+" Tag(e) bis naechster Gast";
+      }else{tageZeit="kein Folgegast";}
+      all.push({unit:u.short,uid:u.id,gast:b.gast,abreise:b.bis,pers:b.pers||1,hunde:b.hunde||0,waesche:!!b.waesche,wechsel:wechsel,zeit:tageZeit,nextGast:next?next.gast:"-",nextAn:next?next.von:"",clean:u.clean});
+    });
+  });
+  all.sort(function(a,b){return a.abreise<b.abreise?-1:1;});
+  var el=document.getElementById("rpTable");
+  if(!all.length){el.innerHTML="Keine anstehenden Reinigungen";return;}
+  var h='<table><tr><th>Fewo</th><th>Abreise</th><th>Naechster Gast</th><th>Anreise</th><th>Waesche</th><th>Zeit</th><th>Anmerkung</th></tr>';
+  all.forEach(function(r){
+    var cls=r.wechsel?"pay-open":"";
+    var wp=r.waesche?(r.pers+" Pakete"):"-";
+    h+='<tr class="'+cls+'"><td><strong>'+r.unit+'</strong></td><td>'+fmt(r.abreise)+'</td>';
+    h+='<td>'+(r.nextGast||"-")+'</td><td>'+(r.nextAn?fmt(r.nextAn):"-")+'</td>';
+    h+='<td>'+wp+'</td>';
+    h+='<td><strong>'+r.zeit+'</strong></td>';
+    h+='<td><input type="text" style="width:120px;padding:2px 4px;border:1px solid #ddd;border-radius:3px;font-size:.72rem" placeholder="Anmerkung"></td></tr>';
+  });
+  h+='</table>';
+  el.innerHTML=h;
+  document.getElementById("rpStats").innerHTML=all.length+" Reinigungen anstehend";
+}
+
+function sendRP(){
+  var all=[];
+  UNITS.forEach(function(u){
+    DATA[u.id].bookings.forEach(function(b){
+      if(b.anfrage)return;var abDate=pd(b.bis);if(abDate<TODAY)return;
+      var twoMo2=new Date(TODAY);twoMo2.setMonth(twoMo2.getMonth()+2);if(abDate>twoMo2)return;
+      var next=null;DATA[u.id].bookings.forEach(function(nb){if(nb._id===b._id||nb.anfrage)return;var nVon=pd(nb.von);if(nVon>=abDate){if(!next||nVon<pd(next.von))next=nb;}});
+      var wechsel=false,zeit="";
+      if(next&&sd(abDate,pd(next.von))){wechsel=true;zeit="WECHSEL!";}
+      else if(next){var diff=Math.round((pd(next.von)-abDate)/864e5);zeit=diff+" Tage";}
+      else{zeit="kein Folgegast";}
+      all.push({unit:u.short,gast:b.gast,abreise:b.bis,pers:b.pers||1,hunde:b.hunde||0,waesche:!!b.waesche,wechsel:wechsel,zeit:zeit,nextGast:next?next.gast:"-",nextAn:next?next.von:"",clean:u.clean});
+    });
+  });
+  all.sort(function(a,b){return a.abreise<b.abreise?-1:1;});
+  var wt="Liebe Frau Hessenkamp,\n\nanbei die naechsten Reinigungstermine:\n\n";
+  all.forEach(function(r){
+    wt+="*"+r.unit+"* | Abreise "+fmt(r.abreise)+"\n";
+    wt+="Naechster Gast: "+(r.nextGast||"keiner")+"\n";
+    if(r.nextAn)wt+="Anreise: "+fmt(r.nextAn)+"\n";
+    if(r.waesche)wt+="Waesche: "+r.pers+" Pakete\n";
+    wt+="Zeit: "+r.zeit+"\n";
+    wt+="---\n";
+  });
+
+  wt+="\nViele Gruesse\nFamilie Fries";
+  window.open("https://wa.me/"+ADMINWA+"?text="+encodeURIComponent(wt),"_blank");
+}
+
+var TRESOR_CODE="2413";
+
+function sendAnreise(uid,id){
+  var b=DATA[uid].bookings.find(function(x){return x._id===id;});if(!b)return;
+  var u=UNITS.find(function(x){return x.id===uid;});
+  var nachname=b.gast.split(" ").pop();
+  closeM();
+  var h='<div class="mo" onclick="if(event.target===this)closeM()"><div class="md">';
+  h+='<h3>Anreise-Info an '+b.gast+'</h3>';
+  h+='<div class="fi" style="margin-bottom:8px"><label>Tresor-Code</label><input type="text" id="tresorCode" value="'+TRESOR_CODE+'" style="width:100px"></div>';
+  var wNote=b.waesche?"":"\nDa Sie ohne Waeschepaket gebucht haben, bitten wir Sie, Ihre eigene Bettwaesche und Handtuecher mitzubringen.\n";
+  var txt="Guten Tag Familie "+nachname+",\n\n";
+  txt+="Ihr Urlaub in der "+u.name+" ist gebucht.\n";
+  txt+="Anreise: "+fmt(b.von)+" ab 16:00 Uhr\n";
+  txt+="Abreise: "+fmt(b.bis)+" bis 10:00 Uhr\n\n";
+  txt+="Die Codenummer des Schluesseltresors lautet: ";
+  h+='<pre id="anreiseTxt" style="white-space:pre-wrap">'+txt+'<span id="codeSpan">'+TRESOR_CODE+'</span>'+wNote+"\nEine angenehme Anreise wuenschen wir Ihnen!\n\nHerzliche Gruesse\nFamilie Fries\nwww.duenenvilla.de</pre>";
+  h+='<div class="mbtns">';
+  h+='<button class="mb mb-wa" onclick="doSendAnreise(\''+uid+'\','+id+')">Per WhatsApp</button>';
+  h+='<button class="mb mb-c" onclick="closeM()">Schliessen</button>';
+  h+='</div></div></div>';
+  document.getElementById("modal").innerHTML=h;
+  document.getElementById("tresorCode").addEventListener("input",function(){
+    document.getElementById("codeSpan").textContent=this.value;
+    TRESOR_CODE=this.value;
+  });
+}
+
+function doSendAnreise(uid,id){
+  var b=DATA[uid].bookings.find(function(x){return x._id===id;});if(!b)return;
+  var u=UNITS.find(function(x){return x.id===uid;});
+  var nachname=b.gast.split(" ").pop();
+  var code=document.getElementById("tresorCode").value||TRESOR_CODE;
+  var wNote=b.waesche?"":"\nDa Sie ohne Waeschepaket gebucht haben, bitten wir Sie, Ihre eigene Bettwaesche und Handtuecher mitzubringen.\n";
+  var wt="Guten Tag Familie "+nachname+",\n\n";
+  wt+="Ihr Urlaub in der "+u.name+" ist gebucht.\n";
+  wt+="Anreise: "+fmt(b.von)+" ab 16:00 Uhr\n";
+  wt+="Abreise: "+fmt(b.bis)+" bis 10:00 Uhr\n\n";
+  wt+="Die Codenummer des Schluesseltresors lautet: *"+code+"*\n";
+  wt+=wNote;
+  wt+="\nEine angenehme Anreise wuenschen wir Ihnen!\n\nHerzliche Gruesse\nFamilie Fries\nwww.duenenvilla.de";
+  var phone=b.phone||"";
+  if(phone&&!phone.startsWith("+")&&!phone.startsWith("00")){phone="49"+phone.replace(/^0/,"");}
+  phone=phone.replace(/[^0-9+]/g,"");
+  if(!phone)phone=ADMINWA;
+  window.open("https://wa.me/"+phone.replace("+","")+"?text="+encodeURIComponent(wt),"_blank");
+}
+
+var deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredPrompt=e;});
+function installApp(){
+  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null;}
+  else{alert("Tipp: Im Browser-Menue 'Zum Startbildschirm hinzufuegen' waehlen.\n\nAndroid: 3-Punkte-Menue > Zum Startbildschirm\niOS: Teilen-Button > Zum Home-Bildschirm");}
+}
+
+function renderAll(){document.getElementById("gmailBox").innerHTML=buildGmailBox();document.getElementById("kurBox").innerHTML=buildKurBox();buildPanels();buildTabs();buildDash();UNITS.forEach(function(u){renderCal(u.id);renderList(u.id);});renderRP();}
+
+// PRE-LOAD 2026 bookings from Excel screenshots
+function preload(){
+  var pre={
+    dv3:[
+      {von:"2026-03-28",bis:"2026-04-04",gast:"Augusten-Theresia Thoms",email:"augusten-thoms@web.de",phone:"016248987686",strasse:"Kopnick 15",plzort:"06886 Lutherstadt Wittenberg",pers:3,hunde:2,waesche:false,source:"",anf:false,buchDat:"2026-02-01",anzPaid:true,anzDate:"2026-02-03",anzAmt:375,restAmt:375,invNr:"3300826",total:750,accom:595,dogFee:70,waescheFee:0,cleanFee:85,priceNote:"7x85 EUR Hauptsaison"},
+      {von:"2026-05-12",bis:"2026-05-17",gast:"Mandl",email:"",phone:"",pers:2,hunde:0,waesche:false,source:"",anf:true,buchDat:"",anzPaid:false,anzDate:"",anzAmt:0,restAmt:0,invNr:"",total:0,accom:0,dogFee:0,waescheFee:0,cleanFee:0,priceNote:""},
+      {von:"2026-06-06",bis:"2026-06-20",gast:"Schmoock",email:"",phone:"",pers:4,hunde:0,waesche:false,source:"",anf:false,buchDat:"",anzPaid:false,anzDate:"",anzAmt:0,restAmt:0,invNr:"",total:0,accom:0,dogFee:0,waescheFee:0,cleanFee:0,priceNote:""},
+      {von:"2026-06-20",bis:"2026-06-28",gast:"Raidar-Rouwen Reime",email:"r-reime@t-online.de",phone:"015120129305",strasse:"Buchenring 29",plzort:"15738 Zeuthen",pers:2,hunde:1,waesche:true,source:"",anf:false,buchDat:"2025-11-02",anzPaid:true,anzDate:"2025-11-04",anzAmt:525,restAmt:560,invNr:"3200626",total:1085,accom:920,dogFee:40,waescheFee:40,cleanFee:85,priceNote:"8x115 EUR Hauptsaison"},
+      {von:"2026-07-04",bis:"2026-07-11",gast:"Ulrike Taeumer",email:"ulrike.taeumer@t-online.de",phone:"017657357347",strasse:"Muhlenaue 16",plzort:"09350 Lichtenstein",pers:2,hunde:1,waesche:true,source:"",anf:false,buchDat:"2025-09-16",anzPaid:true,anzDate:"2025-09-19",anzAmt:515,restAmt:530,invNr:"3040726",total:1045,accom:875,dogFee:35,waescheFee:50,cleanFee:85,priceNote:"7x125 EUR Hauptsaison"},
+      {von:"2026-07-18",bis:"2026-07-25",gast:"Bosack",email:"",phone:"",pers:2,hunde:1,waesche:false,source:"",anf:true,buchDat:"",anzPaid:false,anzDate:"",anzAmt:0,restAmt:0,invNr:"",total:0,accom:0,dogFee:0,waescheFee:0,cleanFee:0,priceNote:""},
+      {von:"2026-07-25",bis:"2026-08-08",gast:"Silvia Bathel",email:"",phone:"",pers:3,hunde:1,waesche:false,source:"",anf:false,buchDat:"2025-09-01",anzPaid:true,anzDate:"2025-09-05",anzAmt:605,restAmt:1350,invNr:"3250726",total:1905,accom:1750,dogFee:70,waescheFee:0,cleanFee:85,priceNote:"14x125 EUR Hauptsaison, -50 keine Waesche"},
+      {von:"2026-08-08",bis:"2026-08-16",gast:"Mergemeier",email:"",phone:"",pers:2,hunde:0,waesche:false,source:"",anf:true,buchDat:"",anzPaid:false,anzDate:"",anzAmt:0,restAmt:0,invNr:"",total:0,accom:0,dogFee:0,waescheFee:0,cleanFee:0,priceNote:""},
+      {von:"2026-08-17",bis:"2026-08-30",gast:"Ranglack H. Lindner",email:"",phone:"",pers:2,hunde:0,waesche:false,source:"",anf:true,buchDat:"",anzPaid:false,anzDate:"",anzAmt:0,restAmt:0,invNr:"",total:0,accom:0,dogFee:0,waescheFee:0,cleanFee:0,priceNote:""},
+      {von:"2026-08-30",bis:"2026-09-10",gast:"Heske",email:"",phone:"",pers:2,hunde:1,waesche:false,source:"",anf:true,buchDat:"",anzPaid:false,anzDate:"",anzAmt:0,restAmt:0,invNr:"",total:0,accom:0,dogFee:0,waescheFee:0,cleanFee:0,priceNote:""},
+      {von:"2026-10-04",bis:"2026-10-12",gast:"Wolf",email:"",phone:"",pers:2,hunde:2,waesche:false,source:"",anf:true,buchDat:"",anzPaid:false,anzDate:"",anzAmt:0,restAmt:0,invNr:"",total:0,accom:0,dogFee:0,waescheFee:0,cleanFee:0,priceNote:""},
+      {von:"2026-12-27",bis:"2027-01-03",gast:"Breuer Silke",email:"",phone:"",pers:2,hunde:2,waesche:false,source:"",anf:false,buchDat:"",anzPaid:false,anzDate:"",anzAmt:0,restAmt:0,invNr:"",total:0,accom:0,dogFee:0,waescheFee:0,cleanFee:0,priceNote:""}
+    ],
+    dv5:[    ],
+    dv5:[
+      {von:"2026-06-17",bis:"2026-07-03",gast:"Gabriela Benedict",email:"gabi_benedict@web.de",phone:"",strasse:"Hansastrasse 52",plzort:"Mulheim an der Ruhr",pers:2,hunde:0,waesche:true,source:"",anf:false,buchDat:"2025-10-09",anzPaid:true,anzDate:"2025-10-15",anzAmt:765,restAmt:1200,invNr:"5170626",total:1965,accom:1840,dogFee:0,waescheFee:50,cleanFee:75,priceNote:"16x115 EUR"},
+      {von:"2026-07-03",bis:"2026-07-11",gast:"Sven Deus",email:"svendeus@web.de",phone:"",strasse:"Ludgerusstr. 45",plzort:"46514 Schermbeck",pers:2,hunde:1,waesche:false,source:"",anf:false,buchDat:"2025-10-08",anzPaid:true,anzDate:"2025-10-13",anzAmt:385,restAmt:650,invNr:"5120726",total:1035,accom:920,dogFee:40,waescheFee:0,cleanFee:75,priceNote:"8x115 EUR"},
+      {von:"2026-07-11",bis:"2026-07-18",gast:"Riedel",email:"",phone:"",pers:2,hunde:1,waesche:false,source:"",anf:true,buchDat:"",anzPaid:false,anzDate:"",anzAmt:0,restAmt:0,invNr:"",total:0,accom:0,dogFee:0,waescheFee:0,cleanFee:0,priceNote:""},
+      {von:"2026-07-18",bis:"2026-08-01",gast:"Uwe Hutschenreuter",email:"Ju.hutschenreuter@web.de",phone:"015128884325",strasse:"",plzort:"Leipzig",pers:2,hunde:2,waesche:false,source:"",anf:false,buchDat:"2025-12-27",anzPaid:true,anzDate:"2026-01-06",anzAmt:855,restAmt:900,invNr:"5180726",total:1755,accom:1680,dogFee:0,waescheFee:0,cleanFee:75,priceNote:"14x120 EUR"},
+      {von:"2026-08-01",bis:"2026-08-14",gast:"Sven Zocher",email:"meggy70@gmx.de",phone:"017681683804",strasse:"Richard-Wagner-Ring 38",plzort:"08451 Crimmitschau",pers:2,hunde:0,waesche:false,source:"",anf:false,buchDat:"2026-02-08",anzPaid:true,anzDate:"2026-02-13",anzAmt:850,restAmt:860,invNr:"5010826",total:1710,accom:1625,dogFee:0,waescheFee:0,cleanFee:85,priceNote:"13x125 EUR"},
+      {von:"2026-09-11",bis:"2026-09-18",gast:"Sander",email:"",phone:"",pers:2,hunde:0,waesche:false,source:"",anf:true,buchDat:"",anzPaid:false,anzDate:"",anzAmt:0,restAmt:0,invNr:"",total:0,accom:0,dogFee:0,waescheFee:0,cleanFee:0,priceNote:""},
+      {von:"2026-12-28",bis:"2027-01-10",gast:"Karl-Heinz Remus",email:"k.h.remus@web.de",phone:"0308342561",strasse:"Senftenberger Ring 52 D",plzort:"13435 Berlin",pers:2,hunde:1,waesche:false,source:"",anf:false,buchDat:"2026-01-25",anzPaid:true,anzDate:"2026-01-29",anzAmt:700,restAmt:725,invNr:"5280826",total:1425,accom:1285,dogFee:65,waescheFee:0,cleanFee:75,priceNote:"6x115 HS + 7x85 NS"}
+    ],
+    sv8a:[
+      {von:"2026-06-21",bis:"2026-06-28",gast:"David Jung",email:"Davecoco@gmx.de",phone:"01724644441",strasse:"Kolzschener Weg 2a",plzort:"06217 Merseburg",pers:5,hunde:1,waesche:true,source:"",anf:false,buchDat:"2026-01-01",anzPaid:true,anzDate:"2026-01-02",anzAmt:915,restAmt:1000,invNr:"A210626",total:1915,accom:1540,dogFee:70,waescheFee:125,cleanFee:180,priceNote:"7x220 EUR, 1 Hund 10 EUR/N"},
+      {von:"2026-12-29",bis:"2027-01-06",gast:"Steffen Zeiger",email:"steffen_zeiger@hotmail.com",phone:"015159954268",strasse:"Heergraben 13",plzort:"07774 Dornburg-Camburg",pers:4,hunde:3,waesche:false,source:"",anf:false,buchDat:"2026-01-18",anzPaid:true,anzDate:"2026-02-02",anzAmt:1140,restAmt:1200,invNr:"A260726",total:2340,accom:2080,dogFee:80,waescheFee:0,cleanFee:180,priceNote:"8x260 EUR, 3 Hunde 10 EUR/N"}
+    ]
+  };
+  var loaded=false;
+  for(var uid in pre){
+    if(DATA[uid].bookings.length===0){
+      pre[uid].forEach(function(b){
+        var cost=calcBookingCost(uid,b);
+        var anz=b.anzAmt||Math.round((b.total||cost.total)*0.5);
+        var rest=b.restAmt||(b.total||cost.total)-anz;
+        var entry={von:b.von,bis:b.bis,gast:b.gast,email:b.email||"",phone:b.phone||"",strasse:b.strasse||"",plzort:b.plzort||"",pers:b.pers,hunde:b.hunde,kurErw:b.pers,kurKind:0,kurBeh:0,kurFee:0,extraFee:0,waesche:!!b.waesche,source:b.source,anfrage:!!b.anf,_id:DATA[uid].nextId++,confirmed:!b.anf,buchDatum:b.buchDat||"",invoiceNr:b.invNr||"",total:b.total||0,accom:b.accom||0,dogFee:b.dogFee||0,waescheFee:b.waescheFee||0,cleanFee:b.cleanFee||0,priceNote:b.priceNote||"",anzahlung:{amount:anz,date:b.anzDate||"",paid:!!b.anzPaid},restzahlung:{amount:rest,date:"",paid:false},notes:""};
+        DATA[uid].bookings.push(entry);
+      });
+      loaded=true;
+    }
+  }
+  return loaded;
+}
+
+// Init
+var didLoad=loadAll();
+if(!didLoad){var preloaded=preload();}
+renderAll();
+if(didLoad)showSt("Daten geladen");
+else if(preloaded)showSt("Buchungen aus Excel importiert");
+
+// PWA Service Worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').then(function(r){
+    console.log('SW registered');
+    // Check for updates every 30 min
+    setInterval(function(){r.update();},1800000);
+  }).catch(function(e){console.log('SW error:',e);});
+}
+</script>
+</body>
+</html>
